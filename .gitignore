@@ -1,4 +1,40 @@
-"node_modules/" 
-"bin/" 
-"obj/" 
-".vs/" 
+# --- Environment ---
+.env
+
+# --- .NET / C# ---
+bin/
+obj/
+*.user
+*.suo
+*.userosscache
+.vs/
+.vscode/
+*.vspscc
+*.dll
+*.exe
+*.pdb
+# Keep migrations if shared with team
+# Migrations/
+
+# --- Node / Angular ---
+node_modules/
+dist/
+*.log
+npm-debug.log
+yarn-error.log
+.angular/
+.angular/cache/
+src/ValenceHub.Client/node_modules/
+src/ValenceHub.Client/dist/
+
+# Angular environment secrets (if any)
+src/ValenceHub.Client/environments/*.ts
+
+# --- OS files ---
+.DS_Store
+Thumbs.db
+.idea/
+
+# --- Database / misc ---
+*.db
+*.localdb

@@ -1,0 +1,6 @@
+@ValenceHub.Api_HostAddress = http://localhost:5094
+
+GET {{ValenceHub.Api_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

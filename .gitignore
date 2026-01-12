@@ -1,35 +1,40 @@
-# --- General ---
+# --- Environment ---
 .env
-.DS_Store
-Thumbs.db
 
-# --- Angular / Node.js (Frontend) ---
+# --- .NET / C# ---
+bin/
+obj/
+*.user
+*.suo
+*.userosscache
+.vs/
+.vscode/
+*.vspscc
+*.dll
+*.exe
+*.pdb
+# Keep migrations if shared with team
+# Migrations/
+
+# --- Node / Angular ---
+node_modules/
+dist/
+*.log
+npm-debug.log
+yarn-error.log
+.angular/
+.angular/cache/
 src/ValenceHub.Client/node_modules/
 src/ValenceHub.Client/dist/
-src/ValenceHub.Client/.angular/
-npm-debug.log*
-yarn-error.log*
-.vscode/
 
-# --- .NET / C# (Backend) ---
-# Specific to your project folders
-src/ValenceHub.Server/**/bin/
-src/ValenceHub.Server/**/obj/
+# Angular environment secrets (if any)
+src/ValenceHub.Client/environments/*.ts
 
-# User-specific files
-*.user
-*.userosscache
-*.sln.docstates
-
-# Visual Studio / Rider files
-.vs/
+# --- OS files ---
+.DS_Store
+Thumbs.db
 .idea/
-*.suo
-*.cache
-*.vspscc
 
-# --- Database ---
+# --- Database / misc ---
 *.db
 *.localdb
-# Ignore actual DB migrations if you want fresh builds, 
-# but usually, you KEEP the Migrations folder and ignore the DB file.

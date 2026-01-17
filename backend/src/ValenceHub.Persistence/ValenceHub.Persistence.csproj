@@ -7,8 +7,8 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\src\ValenceHub.Application\ValenceHub.Application.csproj" />
-    <ProjectReference Include="..\src\ValenceHub.Domain\ValenceHub.Domain.csproj" />
+    <ProjectReference Include="..\ValenceHub.Application\ValenceHub.Application.csproj" />
+    <ProjectReference Include="..\ValenceHub.Domain\ValenceHub.Domain.csproj" />
   </ItemGroup>
 
 </Project>

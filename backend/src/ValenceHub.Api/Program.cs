@@ -1,6 +1,12 @@
+using Microsoft.EntityFrameworkCore;
+using ValenceHub.Persistence.Contexts;
+
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
+
+builder.Services.AddDbContext<ValenceHubDbContext>(options =>
+    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 // Swagger
 builder.Services.AddEndpointsApiExplorer();

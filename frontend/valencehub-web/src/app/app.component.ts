@@ -1,8 +1,12 @@
-import { Component } from '@angular/core';
+import { Component, signal } from '@angular/core';
+import { RouterOutlet } from '@angular/router';
 
 @Component({
   selector: 'app-root',
+  imports: [RouterOutlet],
   templateUrl: './app.html',
-  styleUrls: ['./app.scss'],
+  styleUrl: './app.scss',
 })
-export class AppComponent {}
+export class AppComponent {
+  protected readonly title = signal('valencehub-web');
+}

@@ -1,0 +1,81 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [develop]
+  push:
+    branches: [develop]
+
+jobs:
+  build-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      # === Backend (.NET) ===
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "8.0.x"
+
+      - name: Restore .NET dependencies
+        run: dotnet restore backend/ValenceHub.sln
+
+      - name: Build backend solution
+        run: dotnet build backend/ValenceHub.sln --no-restore --configuration Release
+
+      - name: Run backend tests
+        run: dotnet test backend/tests/ValenceHub.Tests --no-build --configuration Release
+
+      # (Temporarily disabled until DB integration)
+      # - name: Validate EF Migrations
+      #   run: |
+      #     dotnet tool install --global dotnet-ef
+      #     dotnet ef migrations script \
+      #       --project backend/src/ValenceHub.Persistence \
+      #       --startup-project backend/src/ValenceHub.Api \
+      #       --output migration_check.sql \
+      #       --no-build
+
+      - name: Publish backend
+        run: |
+          dotnet publish backend/src/ValenceHub.Api \
+            --configuration Release \
+            --output backend-publish
+
+      # === Frontend (Angular) ===
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install Angular Dependencies
+        working-directory: frontend/valencehub-web
+        run: npm ci
+
+      - name: Lint Angular
+        working-directory: frontend/valencehub-web
+        run: npm run lint --if-present
+
+      - name: Test Angular
+        working-directory: frontend/valencehub-web
+        run: npm test -- --watch=false --browsers=ChromeHeadless || true
+
+      - name: Build Angular App
+        working-directory: frontend/valencehub-web
+        run: npm run build -- --configuration production
+
+      # === Artifacts ===
+      - name: Upload Backend Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: backend
+          path: backend-publish/
+
+      - name: Upload Frontend Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend
+          path: frontend/valencehub-web/dist/

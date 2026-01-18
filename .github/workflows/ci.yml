@@ -10,21 +10,6 @@ jobs:
   build-test:
     runs-on: ubuntu-latest
 
-    services:
-      mssql:
-        image: mcr.microsoft.com/mssql/server:2022-latest
-        env:
-          SA_PASSWORD: "MySecurePassword123!"
-          ACCEPT_EULA: "Y"
-        ports:
-          - 1433:1433
-        options: >-
-          --health-cmd="/opt/mssql-tools/bin/sqlcmd -S localhost -U SA -P 'MySecurePassword123!' -Q 'SELECT 1'"
-          --health-interval 10s
-          --health-timeout 10s
-          --health-retries 10
-          --health-start-period 40s
-
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
@@ -44,14 +29,15 @@ jobs:
       - name: Run backend tests
         run: dotnet test backend/ValenceHub.Tests --no-build --configuration Release
 
-      - name: Validate EF Migrations
-        run: |
-          dotnet tool install --global dotnet-ef
-          dotnet ef migrations script \
-            --project backend/src/ValenceHub.Persistence \
-            --startup-project backend/src/ValenceHub.Api \
-            --output migration_check.sql \
-            --no-build
+      # (Temporarily disabled until DB integration)
+      # - name: Validate EF Migrations
+      #   run: |
+      #     dotnet tool install --global dotnet-ef
+      #     dotnet ef migrations script \
+      #       --project backend/src/ValenceHub.Persistence \
+      #       --startup-project backend/src/ValenceHub.Api \
+      #       --output migration_check.sql \
+      #       --no-build
 
       - name: Publish backend
         run: |

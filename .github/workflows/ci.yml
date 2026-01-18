@@ -27,7 +27,7 @@ jobs:
         run: dotnet build backend/ValenceHub.sln --no-restore --configuration Release
 
       - name: Run backend tests
-        run: dotnet test backend/ValenceHub.Tests --no-build --configuration Release
+        run: dotnet test backend/tests/ValenceHub.Tests --no-build --configuration Release
 
       # (Temporarily disabled until DB integration)
       # - name: Validate EF Migrations

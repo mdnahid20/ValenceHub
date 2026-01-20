@@ -1,28 +1,23 @@
 using Microsoft.EntityFrameworkCore;
 using ValenceHub.Persistence.Contexts;
+using ValenceHub.Api.Extensions;
+using ValenceHub.Api.Middlewares;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddControllers();
+// Centralized API registrations (controllers, swagger, CORS, filters)
+builder.Services.AddApiServices(builder.Configuration);
 
+// DbContext registration (keep your existing connection string key)
 builder.Services.AddDbContext<ValenceHubDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-// Swagger
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen(options =>
-{
-    options.SwaggerDoc("v1", new()
-    {
-        Title = "ValenceHub API",
-        Version = "v1",
-        Description = "E-Commerce platform backend API"
-    });
-});
-
 var app = builder.Build();
 
-app.MapControllers();
+// Global exception handling
+app.UseMiddleware<ExceptionHandlingMiddleware>();
+
+app.UseCors();
 
 if (app.Environment.IsDevelopment())
 {
@@ -33,5 +28,11 @@ if (app.Environment.IsDevelopment())
         c.RoutePrefix = string.Empty; // access via http://localhost:5000
     });
 }
+
+// Add authentication/authorization here when you wire JWT
+// app.UseAuthentication();
+app.UseAuthorization();
+
+app.MapControllers();
 
 app.Run();

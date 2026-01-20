@@ -5,6 +5,14 @@
     <ProjectReference Include="..\ValenceHub.Domain\ValenceHub.Domain.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Authentication\" />
+    <Folder Include="Email\" />
+    <Folder Include="Hashing\" />
+    <Folder Include="FileStorage\" />
+    <Folder Include="Time\" />
+  </ItemGroup>
+
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>

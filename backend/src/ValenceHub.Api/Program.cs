@@ -1,21 +1,19 @@
 using Microsoft.EntityFrameworkCore;
 using ValenceHub.Persistence.Contexts;
-using ValenceHub.Api.Extensions;
-using ValenceHub.Api.Middlewares;
+using ValenceHub.Application;
+using ValenceHub.Persistence;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Centralized API registrations (controllers, swagger, CORS, filters)
-builder.Services.AddApiServices(builder.Configuration);
 
-// DbContext registration (keep your existing connection string key)
 builder.Services.AddDbContext<ValenceHubDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
+builder.Services.AddApplication(); 
+builder.Services.AddPersistence(builder.Configuration);
+
 var app = builder.Build();
 
-// Global exception handling
-app.UseMiddleware<ExceptionHandlingMiddleware>();
 
 app.UseCors();
 
@@ -29,10 +27,6 @@ if (app.Environment.IsDevelopment())
     });
 }
 
-// Add authentication/authorization here when you wire JWT
-// app.UseAuthentication();
 app.UseAuthorization();
-
 app.MapControllers();
-
 app.Run();

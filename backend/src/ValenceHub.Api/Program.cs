@@ -12,8 +12,20 @@ builder.Services.AddDbContext<ValenceHubDbContext>(options =>
 builder.Services.AddApplication(); 
 builder.Services.AddPersistence(builder.Configuration);
 
-var app = builder.Build();
+builder.Services.AddCors(options =>
+{
+    options.AddDefaultPolicy(policy =>
+    {
+        policy.AllowAnyOrigin()
+              .AllowAnyHeader()
+              .AllowAnyMethod();
+    });
+});
 
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
+
+var app = builder.Build();
 
 app.UseCors();
 
@@ -27,6 +39,4 @@ if (app.Environment.IsDevelopment())
     });
 }
 
-app.UseAuthorization();
-app.MapControllers();
 app.Run();

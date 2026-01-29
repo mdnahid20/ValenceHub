@@ -1,13 +1,13 @@
 using ValenceHub.Application.Abstractions.Repositories;
-using ValenceHub.Persistence.Contexts;
+using ValenceHub.Persistence.Write.Contexts;
 
-namespace ValenceHub.Persistence.Repositories;
+namespace ValenceHub.Persistence.Write.Repositories.Base;
 
 public class WriteRepository<T> : IWriteRepository<T> where T : class
 {
-    protected readonly ValenceHubDbContext _db;
+    protected readonly ValenceHubWriteDbContext _db;
 
-    public WriteRepository(ValenceHubDbContext db) => _db = db;
+    public WriteRepository(ValenceHubWriteDbContext db) => _db = db;
 
     public async Task AddAsync(T entity, CancellationToken cancellationToken = default)
         => await _db.Set<T>().AddAsync(entity, cancellationToken);

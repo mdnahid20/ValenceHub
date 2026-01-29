@@ -2,7 +2,7 @@
 
 #nullable disable
 
-namespace ValenceHub.Persistence.Migrations
+namespace ValenceHub.Persistence.Write.Migrations
 {
     /// <inheritdoc />
     public partial class InitialCreate : Migration

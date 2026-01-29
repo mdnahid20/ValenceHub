@@ -1,13 +1,10 @@
 using Microsoft.EntityFrameworkCore;
-using ValenceHub.Persistence.Contexts;
+using ValenceHub.Persistence.Read.Contexts;
+using ValenceHub.Persistence.Write.Contexts;
 using ValenceHub.Application;
 using ValenceHub.Persistence;
 
 var builder = WebApplication.CreateBuilder(args);
-
-
-builder.Services.AddDbContext<ValenceHubDbContext>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
 builder.Services.AddApplication(); 
 builder.Services.AddPersistence(builder.Configuration);

@@ -13,6 +13,14 @@ obj/
 *.dll
 *.exe
 *.pdb
+
+# Ignore local configuration files
+appsettings.Development.json
+appsettings.Local.json
+
+# Ignore Secret Manager files (for .NET)
+secrets.json
+
 # Keep migrations if shared with team
 # Migrations/
 

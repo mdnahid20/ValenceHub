@@ -1,15 +1,15 @@
 using System.Linq.Expressions;
 using Microsoft.EntityFrameworkCore;
 using ValenceHub.Application.Abstractions.Repositories;
-using ValenceHub.Persistence.Contexts;
+using ValenceHub.Persistence.Read.Contexts;
 
-namespace ValenceHub.Persistence.Repositories;
+namespace ValenceHub.Persistence.Read.Repositories.Base;
 
 public class ReadRepository<T> : IReadRepository<T> where T : class
 {
-    protected readonly ValenceHubDbContext _db;
+    protected readonly ValenceHubReadDbContext _db;
 
-    public ReadRepository(ValenceHubDbContext db) => _db = db;
+    public ReadRepository(ValenceHubReadDbContext db) => _db = db;
 
     public async Task<T?> FirstOrDefaultAsync(
         Expression<Func<T, bool>> predicate,

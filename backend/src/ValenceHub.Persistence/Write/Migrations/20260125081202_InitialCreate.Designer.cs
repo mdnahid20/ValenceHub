@@ -2,17 +2,20 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
-using ValenceHub.Persistence.Contexts;
+using ValenceHub.Persistence.Write.Contexts;
 
 #nullable disable
 
-namespace ValenceHub.Persistence.Migrations
+namespace ValenceHub.Persistence.Write.Migrations
 {
-    [DbContext(typeof(ValenceHubDbContext))]
-    partial class ValenceHubDbContextModelSnapshot : ModelSnapshot
+    [DbContext(typeof(ValenceHubWriteDbContext))]
+    [Migration("20260125081202_InitialCreate")]
+    partial class InitialCreate
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

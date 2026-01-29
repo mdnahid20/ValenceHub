@@ -2,8 +2,15 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using ValenceHub.Application.Abstractions.Repositories;
-using ValenceHub.Persistence.Contexts;
-using ValenceHub.Persistence.Repositories;
+using ValenceHub.Persistence.Read.Connection;
+using ValenceHub.Persistence.Read.Contexts;
+using ValenceHub.Persistence.Read.Dapper.QueryExecutor;
+using ValenceHub.Persistence.Read.Repositories.Base;
+using ValenceHub.Persistence.Write.Contexts;
+using ValenceHub.Persistence.Write.Dispatchers;
+using ValenceHub.Persistence.Write.Interceptors;
+using ValenceHub.Persistence.Write.Repositories.Base;
+using ValenceHub.Persistence.Write.UnitOfWork;
 
 namespace ValenceHub.Persistence;
 
@@ -11,12 +18,20 @@ public static class DependencyInjection
 {
     public static IServiceCollection AddPersistence(this IServiceCollection services, IConfiguration configuration)
     {
-        services.AddDbContext<ValenceHubDbContext>(options =>
-            options.UseSqlServer(configuration.GetConnectionString("DefaultConnection")));
+        services.AddDbContext<ValenceHubWriteDbContext>(options => options.UseSqlServer(configuration.GetConnectionString("WriteDb")));
+        services.AddDbContext<ValenceHubReadDbContext>(options =>  options.UseSqlServer(configuration.GetConnectionString("ReadDb")));
+
+        services.AddSingleton<IDbConnectionFactory, SqlConnectionFactory>();
+        services.AddScoped<ISqlQueryExecutor, SqlQueryExecutor>();
 
         services.AddScoped(typeof(IReadRepository<>), typeof(ReadRepository<>));
         services.AddScoped(typeof(IWriteRepository<>), typeof(WriteRepository<>));
         services.AddScoped<IUnitOfWork, UnitOfWork>();
+
+      //  services.AddScoped<ICurrentUserService, CurrentUserService>();
+        services.AddScoped<AuditingInterceptor>();
+        services.AddScoped<SoftDeleteInterceptor>();
+        services.AddScoped<DomainEventDispatcher>();
 
         return services;
     }

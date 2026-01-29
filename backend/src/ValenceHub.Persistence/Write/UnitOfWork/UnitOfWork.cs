@@ -1,22 +1,27 @@
 using Microsoft.EntityFrameworkCore.Storage;
 using ValenceHub.Application.Abstractions.Repositories;
-using ValenceHub.Persistence.Contexts;
+using ValenceHub.Persistence.Write.Contexts;
+using ValenceHub.Persistence.Write.Dispatchers;
 
-namespace ValenceHub.Persistence.Repositories;
+namespace ValenceHub.Persistence.Write.UnitOfWork;
 
 public class UnitOfWork : IUnitOfWork
 {
-    private readonly ValenceHubDbContext _context;
+    private readonly ValenceHubWriteDbContext _context;
     private IDbContextTransaction? _currentTransaction;
+    private readonly DomainEventDispatcher _dispatcher;
 
-    public UnitOfWork(ValenceHubDbContext context)
+    public UnitOfWork(ValenceHubWriteDbContext context, DomainEventDispatcher dispatcher)
     {
         _context = context;
+        _dispatcher = dispatcher;
     }
 
     public async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
     {
-        return await _context.SaveChangesAsync(cancellationToken);
+        var result = await _context.SaveChangesAsync(cancellationToken);
+        await _dispatcher.DispatchEventsAsync(_context);
+        return result;
     }
 
     public async Task BeginTransactionAsync(CancellationToken cancellationToken = default)

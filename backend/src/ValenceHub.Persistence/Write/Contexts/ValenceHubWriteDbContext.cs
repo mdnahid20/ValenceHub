@@ -2,23 +2,32 @@
 using System.Linq.Expressions;
 using ValenceHub.Domain.Interfaces;
 using ValenceHub.Persistence.Write.Interceptors;
+using ValenceHub.Persistence.Write.Outbox.Models;
 
 namespace ValenceHub.Persistence.Write.Contexts;
 
 public class ValenceHubWriteDbContext : DbContext
 {
     private readonly AuditingInterceptor _auditInterceptor;
-    public ValenceHubWriteDbContext(DbContextOptions<ValenceHubWriteDbContext> options, AuditingInterceptor auditInterceptor)
+    private readonly SoftDeleteInterceptor _softDeleteInterceptor;
+
+    public ValenceHubWriteDbContext(
+        DbContextOptions<ValenceHubWriteDbContext> options,
+        AuditingInterceptor auditInterceptor,
+        SoftDeleteInterceptor softDeleteInterceptor)
         : base(options) {
         _auditInterceptor = auditInterceptor;
+        _softDeleteInterceptor = softDeleteInterceptor;
     }
+    public DbSet<OutboxMessage> OutboxMessages => Set<OutboxMessage>();
+
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
-        optionsBuilder.AddInterceptors(_auditInterceptor);
+        optionsBuilder.AddInterceptors(_auditInterceptor, _softDeleteInterceptor);
     }
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        base.OnModelCreating(modelBuilder);
+        modelBuilder.ApplyConfigurationsFromAssembly(typeof(ValenceHubWriteDbContext).Assembly);
 
         foreach (var entityType in modelBuilder.Model.GetEntityTypes())
         {

@@ -1,7 +1,10 @@
 using Microsoft.EntityFrameworkCore.Storage;
 using ValenceHub.Application.Abstractions.Repositories;
+using ValenceHub.Domain.Common.Events;
+using ValenceHub.Domain.Common.Models;
 using ValenceHub.Persistence.Write.Contexts;
-using ValenceHub.Persistence.Write.Dispatchers;
+using ValenceHub.Persistence.Write.Outbox.Models;
+using ValenceHub.Persistence.Write.Outbox.Serialization;
 
 namespace ValenceHub.Persistence.Write.UnitOfWork;
 
@@ -9,18 +12,25 @@ public class UnitOfWork : IUnitOfWork
 {
     private readonly ValenceHubWriteDbContext _context;
     private IDbContextTransaction? _currentTransaction;
-    private readonly DomainEventDispatcher _dispatcher;
 
-    public UnitOfWork(ValenceHubWriteDbContext context, DomainEventDispatcher dispatcher)
+    public UnitOfWork(ValenceHubWriteDbContext context)
     {
         _context = context;
-        _dispatcher = dispatcher;
     }
 
     public async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
     {
+        var domainEvents = ExtractDomainEvents();
+        var outboxMessages = domainEvents
+        .Select(ToOutboxMessage)
+        .ToList();
+
+        if (outboxMessages.Any())
+        {
+            await _context.Set<OutboxMessage>().AddRangeAsync(outboxMessages, cancellationToken);
+        }
+
         var result = await _context.SaveChangesAsync(cancellationToken);
-        await _dispatcher.DispatchEventsAsync(_context);
         return result;
     }
 
@@ -57,4 +67,33 @@ public class UnitOfWork : IUnitOfWork
 
         await _context.DisposeAsync();
     }
+
+    private IReadOnlyList<IDomainEvent> ExtractDomainEvents()
+    {
+        var aggregates = _context.ChangeTracker
+            .Entries<AggregateRoot<Guid>>()
+            .Where(x => x.Entity.DomainEvents.Any())
+            .Select(x => x.Entity)
+            .ToList();
+
+        var domainEvents = aggregates
+            .SelectMany(x => x.DomainEvents)
+            .ToList();
+
+        aggregates.ForEach(x => x.ClearDomainEvents());
+
+        return domainEvents;
+    }
+    private static OutboxMessage ToOutboxMessage(IDomainEvent domainEvent)
+    {
+        var payload = DomainEventSerializer.Serialize(domainEvent, out var version);
+
+        return new OutboxMessage(
+            type: domainEvent.GetType().AssemblyQualifiedName!,
+            payload: payload,
+            version: version,
+            occurredOnUtc: domainEvent.OccurredOn
+        );
+    }
+
 }

@@ -3,11 +3,13 @@ using ValenceHub.Persistence.Read.Contexts;
 using ValenceHub.Persistence.Write.Contexts;
 using ValenceHub.Application;
 using ValenceHub.Persistence;
+using ValenceHub.Api.BackgroundServices;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddApplication(); 
 builder.Services.AddPersistence(builder.Configuration);
+builder.Services.AddHostedService<OutboxProcessingBackgroundService>();
 
 builder.Services.AddCors(options =>
 {

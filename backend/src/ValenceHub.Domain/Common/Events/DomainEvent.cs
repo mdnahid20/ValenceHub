@@ -1,11 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+using System;
+namespace ValenceHub.Domain.Common.Events;
 
-namespace ValenceHub.Domain.Common.Events
+public abstract class DomainEvent : IDomainEvent
 {
-    public abstract class DomainEvent : IDomainEvent
-    {
-        public DateTime OccurredOn { get; protected set; } = DateTime.UtcNow;
-    }
+    public DateTime OccurredOn { get; init; } = DateTime.UtcNow;
 }

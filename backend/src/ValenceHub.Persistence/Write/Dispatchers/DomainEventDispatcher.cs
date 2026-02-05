@@ -3,7 +3,9 @@ using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Text;
+using ValenceHub.Domain.Common.Events;
 using ValenceHub.Domain.Common.Models;
+using ValenceHub.Persistence.Read.Projectors;
 
 namespace ValenceHub.Persistence.Write.Dispatchers;
 
@@ -29,7 +31,14 @@ public class DomainEventDispatcher
 
         foreach (var @event in events)
         {
-            await _mediator.Publish(@event);
+            await DispatchAsync(@event);
         }
+    }
+    public async Task DispatchAsync(
+        IDomainEvent domainEvent,
+        CancellationToken cancellationToken = default)
+    {
+        var notification = new DomainEventNotification(domainEvent);
+        await _mediator.Publish(notification, cancellationToken);
     }
 }

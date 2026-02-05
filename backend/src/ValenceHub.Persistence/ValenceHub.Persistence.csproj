@@ -28,8 +28,8 @@
   <ItemGroup>
     <Folder Include="Common\" />
     <Folder Include="Read\Models\" />
+    <Folder Include="Read\Idempotency\" />
     <Folder Include="Write\Migrations\" />
-    <Folder Include="Write\Configurations\" />
   </ItemGroup>
 
 </Project>

@@ -1,5 +1,5 @@
 using Microsoft.EntityFrameworkCore.Storage;
-using ValenceHub.Application.Abstractions.Repositories;
+using ValenceHub.Application.Abstractions.Transactions;
 using ValenceHub.Domain.Common.Events;
 using ValenceHub.Domain.Common.Models;
 using ValenceHub.Persistence.Write.Contexts;

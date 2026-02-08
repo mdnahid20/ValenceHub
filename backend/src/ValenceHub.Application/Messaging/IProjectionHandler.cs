@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace ValenceHub.Application.Abstractions.Messaging;
+namespace ValenceHub.Application.Messaging;
 
 public interface IProjectionHandler<in TEvent>
 {

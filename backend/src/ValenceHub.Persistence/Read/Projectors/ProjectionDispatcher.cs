@@ -2,7 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
-using ValenceHub.Application.Abstractions.Messaging;
+using ValenceHub.Application.Messaging;
 using ValenceHub.Domain.Common.Events;
 
 namespace ValenceHub.Persistence.Read.Projectors;

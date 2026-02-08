@@ -1,26 +1,39 @@
-using MediatR;
 using Microsoft.Extensions.Logging;
+using ValenceHub.Application.Abstractions.Commands;
+using ValenceHub.Application.Abstractions.Results;
 
 namespace ValenceHub.Application.Behaviors;
 
-public class LoggingBehavior<TRequest, TResponse> : IPipelineBehavior<TRequest, TResponse>
-    where TRequest : notnull
+public sealed class LoggingBehavior<TCommand>
+    : ICommandBehavior<TCommand>
+    where TCommand : ICommand
 {
-    private readonly ILogger<LoggingBehavior<TRequest, TResponse>> _logger;
+    private readonly ILogger<LoggingBehavior<TCommand>> _logger;
 
-    public LoggingBehavior(ILogger<LoggingBehavior<TRequest, TResponse>> logger)
+    public LoggingBehavior(ILogger<LoggingBehavior<TCommand>> logger)
     {
         _logger = logger;
     }
 
-    public async Task<TResponse> Handle(TRequest request, RequestHandlerDelegate<TResponse> next, CancellationToken cancellationToken)
+    public async Task<Result> Handle(
+        TCommand command,
+        CommandHandlerDelegate next,
+        CancellationToken cancellationToken)
     {
-        var requestName = typeof(TRequest).Name;
-        _logger.LogInformation("Handling {RequestName} {@Request}", requestName, request);
+        var name = typeof(TCommand).Name;
 
-        var response = await next();
+        _logger.LogInformation("Handling command {Command}", name);
 
-        _logger.LogInformation("Handled {RequestName} {@Response}", requestName, response);
-        return response;
+        var result = await next(cancellationToken);
+
+        if (result.IsFailure)
+        {
+            _logger.LogWarning(
+                "Command {Command} failed: {Error}",
+                name,
+                result.Error?.Message);
+        }
+
+        return result;
     }
 }

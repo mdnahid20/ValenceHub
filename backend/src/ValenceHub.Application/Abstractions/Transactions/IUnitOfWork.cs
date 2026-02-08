@@ -1,6 +1,4 @@
-
-
-namespace ValenceHub.Application.Abstractions.Repositories;
+namespace ValenceHub.Application.Abstractions.Transactions;
 
 public interface IUnitOfWork : IAsyncDisposable
 {

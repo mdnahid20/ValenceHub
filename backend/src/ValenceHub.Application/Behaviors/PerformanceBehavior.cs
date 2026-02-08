@@ -1,40 +1,39 @@
 ﻿using MediatR;
 using Microsoft.Extensions.Logging;
 using System.Diagnostics;
+using ValenceHub.Application.Abstractions.Commands;
+using ValenceHub.Application.Abstractions.Results;
 
 namespace ValenceHub.Application.Behaviors;
 
-public class PerformanceBehavior<TRequest, TResponse> 
-    : IPipelineBehavior<TRequest, TResponse> where TRequest : notnull
+public sealed class PerformanceBehavior<TCommand>
+    : ICommandBehavior<TCommand>
+    where TCommand : ICommand
 {
-    private readonly ILogger<PerformanceBehavior<TRequest, TResponse>> _logger;
-    private readonly Stopwatch _timer = new();
+    private readonly ILogger<PerformanceBehavior<TCommand>> _logger;
 
     public PerformanceBehavior(
-        ILogger<PerformanceBehavior<TRequest, TResponse>> logger)
+        ILogger<PerformanceBehavior<TCommand>> logger)
     {
         _logger = logger;
     }
 
-    public async Task<TResponse> Handle(
-        TRequest request,
-        RequestHandlerDelegate<TResponse> next,
+    public async Task<Result> Handle(
+        TCommand command,
+        CommandHandlerDelegate next,
         CancellationToken cancellationToken)
     {
-        _timer.Start();
+        var sw = Stopwatch.StartNew();
 
-        var response = await next();
+        var result = await next(cancellationToken);
 
-        _timer.Stop();
+        sw.Stop();
 
-        var elapsed = _timer.ElapsedMilliseconds;
-        if (elapsed > 500)
-        {
-            _logger.LogWarning(
-                "Long Running Request: {RequestName} ({Elapsed}ms)",
-                typeof(TRequest).Name, elapsed);
-        }
+        _logger.LogInformation(
+            "Command {Command} executed in {Elapsed} ms",
+            typeof(TCommand).Name,
+            sw.ElapsedMilliseconds);
 
-        return response;
+        return result;
     }
 }

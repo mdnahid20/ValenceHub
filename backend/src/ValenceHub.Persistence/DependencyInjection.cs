@@ -2,7 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using MediatR;
-using ValenceHub.Application.Abstractions.Repositories;
+using ValenceHub.Application.Abstractions.Transactions;
 using ValenceHub.Persistence.Read.Connection;
 using ValenceHub.Persistence.Read.Contexts;
 using ValenceHub.Persistence.Read.Dapper.QueryExecutor;
@@ -15,6 +15,7 @@ using ValenceHub.Persistence.Write.Interceptors;
 using ValenceHub.Persistence.Write.Outbox.Processors;
 using ValenceHub.Persistence.Write.Repositories.Base;
 using ValenceHub.Persistence.Write.UnitOfWork;
+using ValenceHub.Application.Abstractions.Repositories;
 
 namespace ValenceHub.Persistence;
 

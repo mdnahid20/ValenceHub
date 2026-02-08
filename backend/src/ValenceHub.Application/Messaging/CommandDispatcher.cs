@@ -37,15 +37,14 @@ internal sealed class CommandDispatcher : ICommandDispatcher
             .Reverse()
             .ToList();
 
-        CommandHandlerDelegate handlerDelegate =
-            () => handler.Handle(command, cancellationToken);
+        CommandHandlerDelegate handlerDelegate = ct => handler.Handle(command, ct);
 
         foreach (var behavior in behaviors)
         {
             var next = handlerDelegate;
-            handlerDelegate = () => behavior.Handle(command, next, cancellationToken);
+            handlerDelegate = ct => behavior.Handle(command, next, ct);
         }
 
-        return handlerDelegate();
+        return handlerDelegate(cancellationToken);
     }
 }

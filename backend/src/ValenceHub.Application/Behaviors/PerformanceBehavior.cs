@@ -25,7 +25,7 @@ public sealed class PerformanceBehavior<TCommand>
     {
         var sw = Stopwatch.StartNew();
 
-        var result = await next();
+        var result = await next(cancellationToken);
 
         sw.Stop();
 

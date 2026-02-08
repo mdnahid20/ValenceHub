@@ -24,7 +24,7 @@ public sealed class TransactionBehavior<TCommand>
 
         try
         {
-            var result = await next();
+            var result = await next(cancellationToken);
 
             if (result.IsSuccess)
             {

@@ -5,7 +5,7 @@ using ValenceHub.Application.Abstractions.Results;
 
 namespace ValenceHub.Application.Behaviors;
 
-public delegate Task<Result> CommandHandlerDelegate();
+public delegate Task<Result> CommandHandlerDelegate(CancellationToken cancellationToken);
 
 public interface ICommandBehavior<TCommand>
     where TCommand : ICommand

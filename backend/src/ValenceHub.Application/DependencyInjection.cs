@@ -25,8 +25,8 @@ public static class DependencyInjection
         services.AddValidatorsFromAssembly(assembly);
 
         services.AddScoped<ICommandDispatcher, CommandDispatcher>();
-        services.AddScoped(typeof(ICommandBehavior<>), typeof(ValidationBehavior<>));
         services.AddScoped(typeof(ICommandBehavior<>), typeof(TransactionBehavior<>));
+        services.AddScoped(typeof(ICommandBehavior<>), typeof(ValidationBehavior<>));
         services.AddScoped(typeof(ICommandBehavior<>), typeof(LoggingBehavior<>));
         services.AddScoped(typeof(ICommandBehavior<>), typeof(PerformanceBehavior<>));
 

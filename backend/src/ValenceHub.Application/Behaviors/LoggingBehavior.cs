@@ -24,7 +24,7 @@ public sealed class LoggingBehavior<TCommand>
 
         _logger.LogInformation("Handling command {Command}", name);
 
-        var result = await next();
+        var result = await next(cancellationToken);
 
         if (result.IsFailure)
         {

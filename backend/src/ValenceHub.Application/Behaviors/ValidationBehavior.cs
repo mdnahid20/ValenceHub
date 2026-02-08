@@ -20,9 +20,7 @@ public sealed class ValidationBehavior<TCommand> : ICommandBehavior<TCommand>
         CancellationToken cancellationToken)
     {
         if (!_validators.Any())
-        {
-            return await next();
-        }
+            return await next(cancellationToken);
 
         var context = new ValidationContext<TCommand>(command);
         var validationResults = await Task.WhenAll(
@@ -30,14 +28,19 @@ public sealed class ValidationBehavior<TCommand> : ICommandBehavior<TCommand>
 
         var failures = validationResults
             .SelectMany(r => r.Errors)
-            .Where(f => f != null)
+            .Where(f => f is not null)
             .ToList();
 
-        if (failures.Any())
+        if (failures.Count != 0)
         {
-            throw new ValidationException(failures);
+            var message = string.Join(", ",
+                failures.Select(f => f.ErrorMessage));
+
+            return Result.Failure(new Error(
+                "Validation",
+                message));
         }
 
-        return await next();
+        return await next(cancellationToken);
     }
 }

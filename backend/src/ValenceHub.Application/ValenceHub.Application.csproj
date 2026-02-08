@@ -13,6 +13,7 @@
 
   <ItemGroup>
     <Folder Include="Abstractions\Services\" />
+    <Folder Include="Features\" />
     <Folder Include="ReadModels\" />
     <Folder Include="Validators\" />
   </ItemGroup>

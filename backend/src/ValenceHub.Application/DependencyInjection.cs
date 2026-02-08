@@ -5,6 +5,7 @@ using FluentValidation;
 using MediatR;
 using Microsoft.Extensions.DependencyInjection;
 using ValenceHub.Application.Behaviors;
+using ValenceHub.Application.Messaging;
 
 namespace ValenceHub.Application;
 
@@ -23,9 +24,11 @@ public static class DependencyInjection
 
         services.AddValidatorsFromAssembly(assembly);
 
-        services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
-        services.AddTransient(typeof(IPipelineBehavior<,>), typeof(LoggingBehavior<,>));
-        services.AddTransient(typeof(IPipelineBehavior<,>), typeof(PerformanceBehavior<,>));
+        services.AddScoped<ICommandDispatcher, CommandDispatcher>();
+        services.AddScoped(typeof(ICommandBehavior<>), typeof(ValidationBehavior<>));
+        services.AddScoped(typeof(ICommandBehavior<>), typeof(TransactionBehavior<>));
+        services.AddScoped(typeof(ICommandBehavior<>), typeof(LoggingBehavior<>));
+        services.AddScoped(typeof(ICommandBehavior<>), typeof(PerformanceBehavior<>));
 
         return services;
     }

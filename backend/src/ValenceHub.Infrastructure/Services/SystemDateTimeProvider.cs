@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-using ValenceHub.Domain.Interfaces;
+using ValenceHub.Application.Abstractions.Services;
 
 namespace ValenceHub.Infrastructure.Services
 {

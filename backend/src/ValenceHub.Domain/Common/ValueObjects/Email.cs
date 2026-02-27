@@ -1,13 +1,22 @@
 using System.Globalization;
 using System.Text.RegularExpressions;
 using ValenceHub.Domain.Abstractions;
-using ValenceHub.Domain.Common.Exceptions;
+using ValenceHub.Domain.Common.Results;
 using ValenceHub.Domain.Common.Validation;
 
 namespace ValenceHub.Domain.Common.ValueObjects;
 
 public sealed class Email : ValueObject
 {
+    private static class EmailErrors
+    {
+        public static readonly Error Empty =
+            Error.Validation("Email.Empty", "Email cannot be empty.");
+
+        public static readonly Error InvalidFormat =
+            Error.Validation("Email.InvalidFormat", "Invalid email format.");
+    }
+
     public string Value { get; }
 
     private Email(string value)
@@ -15,17 +24,29 @@ public sealed class Email : ValueObject
         Value = value;
     }
 
-    public static Email Create(string? email)
+    public static Result<Email> Create(string? email)
     {
         if (string.IsNullOrWhiteSpace(email))
-            throw new DomainException("Email cannot be empty.");
+            return Result<Email>.Failure(EmailErrors.Empty);
 
-        var normalized = NormalizeDomain(email.Trim());
+        string normalized;
+        try
+        {
+            normalized = NormalizeDomain(email.Trim());
+        }
+        catch (ArgumentException)
+        {
+            return Result<Email>.Failure(EmailErrors.InvalidFormat);
+        }
+        catch (RegexMatchTimeoutException)
+        {
+            return Result<Email>.Failure(EmailErrors.InvalidFormat);
+        }
 
         if (!ValidationPatterns.Email.IsMatch(normalized))
-            throw new DomainException("Invalid email format.");
+            return Result<Email>.Failure(EmailErrors.InvalidFormat);
 
-        return new Email(normalized.ToLowerInvariant());
+        return Result<Email>.Success(new Email(normalized.ToLowerInvariant()));
     }
 
     private static string NormalizeDomain(string email)

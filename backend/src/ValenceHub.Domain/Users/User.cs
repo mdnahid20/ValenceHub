@@ -22,6 +22,11 @@ public sealed class User : AggregateRoot<UserId>, IAuditable, ISoftDelete
             Error.Validation(
                 "User.PasswordHash.TooLong",
                 $"Password hash must be at most {maxLength} characters.");
+
+        public static readonly Error CannotModifyDeletedUser =
+            Error.Validation(
+                "User.Deleted.ModificationNotAllowed",
+                "Cannot modify a deleted user.");
     }
 
     private User(
@@ -29,16 +34,18 @@ public sealed class User : AggregateRoot<UserId>, IAuditable, ISoftDelete
         Email? email,
         PhoneNumber? phoneNumber,
         string passwordHash,
+        UserId? createdBy,   
         DateTime createdAt,
-        DateTime? updatedAt,
         bool isDeleted)
         : base(id)
     {
         Email = email;
         PhoneNumber = phoneNumber;
         PasswordHash = passwordHash;
+
+        CreatedBy = createdBy;  
         CreatedAt = createdAt;
-        UpdatedAt = updatedAt;
+        
         IsDeleted = isDeleted;
     }
 
@@ -46,16 +53,16 @@ public sealed class User : AggregateRoot<UserId>, IAuditable, ISoftDelete
     public PhoneNumber? PhoneNumber { get; private set; }
     public string PasswordHash { get; private set; }
 
-    public DateTime CreatedAt { get; set; }
-    public DateTime? UpdatedAt { get; set; }
-    public string? CreatedBy { get; set; }
-    public string? UpdatedBy { get; set; }
+    public DateTime CreatedAt { get; private set; }
+    public DateTime? UpdatedAt { get; private set; }
+    public UserId? CreatedBy { get; private set; }
+    public UserId? UpdatedBy { get; private set; }
 
-    public bool IsDeleted { get; set; }
-    public DateTime? DeletedAt { get; set; }
-    public string? DeletedBy { get; set; }
+    public bool IsDeleted { get; private set; }
+    public DateTime? DeletedAt { get; private set; }
+    public UserId? DeletedBy { get; private set; }
 
-    public static Result<User> Create(string? email, string? phoneNumber, string passwordHash)
+    public static Result<User> Create(string? email, string? phoneNumber, string passwordHash,UserId createdBy, DateTime now)
     {
         Email? emailVo = null;
         if (!string.IsNullOrWhiteSpace(email))
@@ -85,20 +92,21 @@ public sealed class User : AggregateRoot<UserId>, IAuditable, ISoftDelete
         if (passwordResult.IsFailure)
             return Result<User>.Failure(passwordResult.Error);
 
-        var now = DateTime.UtcNow;
-
         return Result<User>.Success(new User(
             id: UserId.New(),
             email: emailVo,
             phoneNumber: phoneVo,
             passwordHash: passwordResult.Value,
+            createdBy: createdBy,
             createdAt: now,
-            updatedAt: now,
             isDeleted: false));
     }
 
-    public Result UpdateContact(string? email, string? phoneNumber)
+    public Result UpdateContact(string? email, string? phoneNumber,UserId updateBy, DateTime now)
     {
+        if (IsDeleted)
+            return Result.Failure(UserErrors.CannotModifyDeletedUser);
+
         Email? emailVo = null;
         if (!string.IsNullOrWhiteSpace(email))
         {
@@ -125,23 +133,38 @@ public sealed class User : AggregateRoot<UserId>, IAuditable, ISoftDelete
 
         Email = emailVo;
         PhoneNumber = phoneVo;
-        UpdatedAt = DateTime.UtcNow;
+        UpdatedAt = now;
+        UpdatedBy = updateBy;
 
         return Result.Success();
     }
 
-    public Result UpdatePasswordHash(string passwordHash)
+    public Result UpdatePasswordHash(string passwordHash, UserId updateBy, DateTime now)
     {
+        if (IsDeleted)
+            return Result.Failure(UserErrors.CannotModifyDeletedUser);
+
         var passwordResult = ValidatePasswordHash(passwordHash);
         if (passwordResult.IsFailure)
             return Result.Failure(passwordResult.Error);
 
         PasswordHash = passwordResult.Value;
-        UpdatedAt = DateTime.UtcNow;
+        UpdatedAt = now;
+        UpdatedBy = updateBy;   
 
         return Result.Success();
     }
+    public Result Delete(UserId deletedBy, DateTime now)
+    {
+        if (IsDeleted)
+            return Result.Success();
 
+        IsDeleted = true;
+        DeletedAt = now;
+        DeletedBy = deletedBy;
+
+        return Result.Success();
+    }
     private static Result EnsureContactProvided(Email? email, PhoneNumber? phoneNumber)
     {
         if (email is null && phoneNumber is null)

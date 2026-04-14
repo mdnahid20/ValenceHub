@@ -1,12 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+using System;
 using ValenceHub.Application.Abstractions.Services;
+using ValenceHub.Application.Common.Clock;
 
 namespace ValenceHub.Infrastructure.Services
 {
-    public class SystemDateTimeProvider : IDateTimeProvider
+    public class SystemDateTimeOffsetProvider : IDateTimeOffsetProvider, IClock
     {
-        public DateTime UtcNow => DateTime.UtcNow;
+        public DateTimeOffset UtcNow => DateTimeOffset.UtcNow;
     }
 }

@@ -1,16 +1,26 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <ItemGroup>
-    <ProjectReference Include="..\ValenceHub.Application\ValenceHub.Application.csproj" />
-    <ProjectReference Include="..\ValenceHub.Domain\ValenceHub.Domain.csproj" />
+    <Compile Remove="Authentication\**" />
+    <Compile Remove="Email\**" />
+    <Compile Remove="FileStorage\**" />
+    <Compile Remove="Hashing\**" />
+    <Compile Remove="Time\**" />
+    <EmbeddedResource Remove="Authentication\**" />
+    <EmbeddedResource Remove="Email\**" />
+    <EmbeddedResource Remove="FileStorage\**" />
+    <EmbeddedResource Remove="Hashing\**" />
+    <EmbeddedResource Remove="Time\**" />
+    <None Remove="Authentication\**" />
+    <None Remove="Email\**" />
+    <None Remove="FileStorage\**" />
+    <None Remove="Hashing\**" />
+    <None Remove="Time\**" />
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Authentication\" />
-    <Folder Include="Email\" />
-    <Folder Include="Hashing\" />
-    <Folder Include="FileStorage\" />
-    <Folder Include="Time\" />
+    <ProjectReference Include="..\ValenceHub.Application\ValenceHub.Application.csproj" />
+    <ProjectReference Include="..\ValenceHub.Domain\ValenceHub.Domain.csproj" />
   </ItemGroup>
 
   <PropertyGroup>

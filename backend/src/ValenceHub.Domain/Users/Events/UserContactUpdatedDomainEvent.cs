@@ -1,14 +1,16 @@
+using ValenceHub.Domain.Common.Enums;
 using ValenceHub.Domain.Common.ValueObjects;
 using ValenceHub.Domain.Events;
 
 namespace ValenceHub.Domain.Users.Events;
 
 public sealed record UserContactUpdatedDomainEvent(
-    UserId UserId,
-    Email? Email,
-    PhoneNumber? PhoneNumber,
-    DateTime OccurredOnUtc
-) : IDomainEvent
+    Guid Id,
+    Guid ActionBy,
+    string? Email,
+    string? PhoneNumber,
+    DateTimeOffset OccurredOnUtc
+) : DomainEvent(OccurredOnUtc)
 {
-    public Guid EventId { get; init; } = Guid.NewGuid();
+    public EntityAction Action => EntityAction.Update;
 }

@@ -1,11 +1,13 @@
+using ValenceHub.Domain.Common.Enums;
 using ValenceHub.Domain.Events;
 
 namespace ValenceHub.Domain.Users.Events;
 
 public sealed record UserDeletedDomainEvent(
-    UserId UserId,
-    DateTime OccurredOnUtc
-) : IDomainEvent
+    Guid Id,
+    Guid ActionBy,
+    DateTimeOffset OccurredOnUtc
+) : DomainEvent(OccurredOnUtc)
 {
-    public Guid EventId { get; init; } = Guid.NewGuid();
+    public EntityAction Action => EntityAction.Delete;
 }

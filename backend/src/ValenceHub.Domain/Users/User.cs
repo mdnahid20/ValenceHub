@@ -2,10 +2,11 @@ using ValenceHub.Domain.Abstractions;
 using ValenceHub.Domain.Common.Results;
 using ValenceHub.Domain.Common.ValueObjects;
 using ValenceHub.Domain.Interfaces;
+using ValenceHub.Domain.Users.Events;
 
 namespace ValenceHub.Domain.Users;
 
-public sealed class User : AggregateRoot<UserId>, IAuditable, ISoftDelete
+public sealed class User : AggregateRoot<UserId,Guid>, IAuditable, ISoftDelete
 {
     private const int MaxPasswordHashLength = 255;
     private static class UserErrors
@@ -35,7 +36,7 @@ public sealed class User : AggregateRoot<UserId>, IAuditable, ISoftDelete
         PhoneNumber? phoneNumber,
         string passwordHash,
         UserId? createdBy,   
-        DateTime createdAt,
+        DateTimeOffset createdAt,
         bool isDeleted)
         : base(id)
     {
@@ -53,16 +54,16 @@ public sealed class User : AggregateRoot<UserId>, IAuditable, ISoftDelete
     public PhoneNumber? PhoneNumber { get; private set; }
     public string PasswordHash { get; private set; }
 
-    public DateTime CreatedAt { get; private set; }
-    public DateTime? UpdatedAt { get; private set; }
+    public DateTimeOffset CreatedAt { get; private set; }
+    public DateTimeOffset? UpdatedAt { get; private set; }
     public UserId? CreatedBy { get; private set; }
     public UserId? UpdatedBy { get; private set; }
 
     public bool IsDeleted { get; private set; }
-    public DateTime? DeletedAt { get; private set; }
+    public DateTimeOffset? DeletedAt { get; private set; }
     public UserId? DeletedBy { get; private set; }
 
-    public static Result<User> Create(string? email, string? phoneNumber, string passwordHash,UserId createdBy, DateTime now)
+    public static Result<User> Create(string? email, string? phoneNumber, string passwordHash,UserId createdBy, DateTimeOffset now)
     {
         Email? emailVo = null;
         if (!string.IsNullOrWhiteSpace(email))
@@ -92,17 +93,27 @@ public sealed class User : AggregateRoot<UserId>, IAuditable, ISoftDelete
         if (passwordResult.IsFailure)
             return Result<User>.Failure(passwordResult.Error);
 
-        return Result<User>.Success(new User(
+        var user = new User(
             id: UserId.New(),
             email: emailVo,
             phoneNumber: phoneVo,
             passwordHash: passwordResult.Value,
             createdBy: createdBy,
             createdAt: now,
-            isDeleted: false));
+            isDeleted: false);
+
+        user.RaiseDomainEvent(
+        new UserCreatedDomainEvent(
+            user.Id,
+            createdBy,
+            user.Email?.Value,
+            user.PhoneNumber?.Value,
+            now));
+
+        return Result<User>.Success(user);
     }
 
-    public Result UpdateContact(string? email, string? phoneNumber,UserId updateBy, DateTime now)
+    public Result UpdateContact(string? email, string? phoneNumber,UserId updateBy, DateTimeOffset now)
     {
         if (IsDeleted)
             return Result.Failure(UserErrors.CannotModifyDeletedUser);
@@ -136,10 +147,12 @@ public sealed class User : AggregateRoot<UserId>, IAuditable, ISoftDelete
         UpdatedAt = now;
         UpdatedBy = updateBy;
 
+        RaiseDomainEvent(new UserContactUpdatedDomainEvent( Id,updateBy,Email?.Value, PhoneNumber?.Value, now));
+
         return Result.Success();
     }
 
-    public Result UpdatePasswordHash(string passwordHash, UserId updateBy, DateTime now)
+    public Result UpdatePasswordHash(string passwordHash, UserId updateBy, DateTimeOffset now)
     {
         if (IsDeleted)
             return Result.Failure(UserErrors.CannotModifyDeletedUser);
@@ -150,11 +163,12 @@ public sealed class User : AggregateRoot<UserId>, IAuditable, ISoftDelete
 
         PasswordHash = passwordResult.Value;
         UpdatedAt = now;
-        UpdatedBy = updateBy;   
+        UpdatedBy = updateBy;
 
+        RaiseDomainEvent(new UserPasswordChangedDomainEvent(Id, now));
         return Result.Success();
     }
-    public Result Delete(UserId deletedBy, DateTime now)
+    public Result Delete(UserId deletedBy, DateTimeOffset now)
     {
         if (IsDeleted)
             return Result.Success();
@@ -162,6 +176,8 @@ public sealed class User : AggregateRoot<UserId>, IAuditable, ISoftDelete
         IsDeleted = true;
         DeletedAt = now;
         DeletedBy = deletedBy;
+
+        RaiseDomainEvent(new UserDeletedDomainEvent(Id, deletedBy, now));
 
         return Result.Success();
     }

@@ -5,8 +5,8 @@ namespace ValenceHub.Domain.Interfaces;
 
 public interface IAuditable
 {
-    DateTime CreatedAt { get; }
-    DateTime? UpdatedAt { get; }
+    DateTimeOffset CreatedAt { get; }
+    DateTimeOffset? UpdatedAt { get; }
     UserId? CreatedBy { get; }
     UserId? UpdatedBy { get; }
 }

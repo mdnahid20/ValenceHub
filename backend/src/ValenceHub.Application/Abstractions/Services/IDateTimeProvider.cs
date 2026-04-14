@@ -4,7 +4,7 @@ using System.Text;
 
 namespace ValenceHub.Application.Abstractions.Services;  
 
-public interface IDateTimeProvider
+public interface IDateTimeOffsetProvider
 {
-    DateTime UtcNow { get; }
+    DateTimeOffset UtcNow { get; }
 }

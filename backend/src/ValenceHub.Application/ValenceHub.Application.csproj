@@ -1,6 +1,18 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <ItemGroup>
+    <Compile Remove="Features\**" />
+    <Compile Remove="ReadModels\**" />
+    <Compile Remove="Validators\**" />
+    <EmbeddedResource Remove="Features\**" />
+    <EmbeddedResource Remove="ReadModels\**" />
+    <EmbeddedResource Remove="Validators\**" />
+    <None Remove="Features\**" />
+    <None Remove="ReadModels\**" />
+    <None Remove="Validators\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\ValenceHub.Domain\ValenceHub.Domain.csproj" />
   </ItemGroup>
 
@@ -13,9 +25,6 @@
 
   <ItemGroup>
     <Folder Include="Abstractions\Services\" />
-    <Folder Include="Features\" />
-    <Folder Include="ReadModels\" />
-    <Folder Include="Validators\" />
   </ItemGroup>
 
   <PropertyGroup>

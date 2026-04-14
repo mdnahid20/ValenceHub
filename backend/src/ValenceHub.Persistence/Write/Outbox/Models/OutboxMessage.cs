@@ -12,9 +12,9 @@ namespace ValenceHub.Persistence.Write.Outbox.Models
         public string Payload { get; init; } = default!;
         public int Version { get; init; }
 
-        public DateTime OccurredOnUtc { get; init; }
+        public DateTimeOffset OccurredOnUtc { get; init; }
 
-        public DateTime? ProcessedOnUtc { get; private set; }
+        public DateTimeOffset? ProcessedOnUtc { get; private set; }
         public string? Error { get; private set; }
 
         private OutboxMessage() { } 
@@ -23,7 +23,7 @@ namespace ValenceHub.Persistence.Write.Outbox.Models
             string type,
             string payload,
             int version,
-            DateTime occurredOnUtc)
+            DateTimeOffset occurredOnUtc)
         {
             Type = type;
             Payload = payload;
@@ -31,8 +31,8 @@ namespace ValenceHub.Persistence.Write.Outbox.Models
             OccurredOnUtc = occurredOnUtc;
         }
 
-        public void MarkProcessed()
-            => ProcessedOnUtc = DateTime.UtcNow;
+        public void MarkProcessed(DateTimeOffset now)
+            => ProcessedOnUtc = now;
 
         public void MarkFailed(string error)
             => Error = error;

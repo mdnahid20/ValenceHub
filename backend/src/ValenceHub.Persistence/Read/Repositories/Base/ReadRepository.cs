@@ -7,9 +7,9 @@ namespace ValenceHub.Persistence.Read.Repositories.Base;
 
 public class ReadRepository<T> : IReadRepository<T> where T : class
 {
-    protected readonly ValenceHubReadDbContext _db;
+    protected readonly ReadDbContext _db;
 
-    public ReadRepository(ValenceHubReadDbContext db) => _db = db;
+    public ReadRepository(ReadDbContext db) => _db = db;
 
     public async Task<T?> FirstOrDefaultAsync(
         Expression<Func<T, bool>> predicate,

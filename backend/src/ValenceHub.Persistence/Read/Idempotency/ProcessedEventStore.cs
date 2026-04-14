@@ -34,7 +34,7 @@ public sealed class ProcessedEventStore : IProcessedEventStore
     public async Task MarkProcessedAsync(
         Guid eventId,
         string eventType,
-        DateTime processedOnUtc,
+        DateTimeOffset processedOnUtc,
         CancellationToken cancellationToken = default)
     {
         const string sql = """

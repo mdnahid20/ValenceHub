@@ -1,10 +1,9 @@
-﻿using MediatR;
-using System;
-using System.Collections.Generic;
-using System.Text;
-using ValenceHub.Domain.Common.Events;
+using MediatR;
+using ValenceHub.Domain.Events;
 
 namespace ValenceHub.Persistence.Read.Projectors;
-public sealed record DomainEventNotification(
-    IDomainEvent DomainEvent
-) : INotification;
+
+public sealed record DomainEventNotification<TDomainEvent>(
+    TDomainEvent DomainEvent
+) : INotification
+    where TDomainEvent : DomainEvent;

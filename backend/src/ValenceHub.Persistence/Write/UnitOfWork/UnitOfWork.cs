@@ -1,7 +1,7 @@
 using Microsoft.EntityFrameworkCore.Storage;
 using ValenceHub.Application.Abstractions.Transactions;
-using ValenceHub.Domain.Common.Events;
-using ValenceHub.Domain.Common.Models;
+using ValenceHub.Domain.Abstractions;
+using ValenceHub.Domain.Events;
 using ValenceHub.Persistence.Write.Contexts;
 using ValenceHub.Persistence.Write.Outbox.Models;
 using ValenceHub.Persistence.Write.Outbox.Serialization;
@@ -22,16 +22,15 @@ public class UnitOfWork : IUnitOfWork
     {
         var domainEvents = ExtractDomainEvents();
         var outboxMessages = domainEvents
-        .Select(ToOutboxMessage)
-        .ToList();
+            .Select(ToOutboxMessage)
+            .ToList();
 
         if (outboxMessages.Any())
         {
             await _context.Set<OutboxMessage>().AddRangeAsync(outboxMessages, cancellationToken);
         }
 
-        var result = await _context.SaveChangesAsync(cancellationToken);
-        return result;
+        return await _context.SaveChangesAsync(cancellationToken);
     }
 
     public async Task BeginTransactionAsync(CancellationToken cancellationToken = default)
@@ -43,7 +42,7 @@ public class UnitOfWork : IUnitOfWork
     public async Task CommitAsync(CancellationToken cancellationToken = default)
     {
         if (_currentTransaction == null) return;
-        await _context.SaveChangesAsync(cancellationToken);
+
         await _currentTransaction.CommitAsync(cancellationToken);
         await _currentTransaction.DisposeAsync();
         _currentTransaction = null;
@@ -68,23 +67,26 @@ public class UnitOfWork : IUnitOfWork
         await _context.DisposeAsync();
     }
 
-    private IReadOnlyList<IDomainEvent> ExtractDomainEvents()
+    private IReadOnlyList<DomainEvent> ExtractDomainEvents()
     {
-        var aggregates = _context.ChangeTracker
-            .Entries<AggregateRoot<Guid>>()
-            .Where(x => x.Entity.DomainEvents.Any())
-            .Select(x => x.Entity)
-            .ToList();
+        var domainEvents = _context.ChangeTracker
+        .Entries<IHasDomainEvents>()
+        .Select(entry => entry.Entity)
+        .SelectMany(entity =>
+        {
+            var events = entity.GetDomainEvents().ToList();
+            if (events.Any())
+            {
+                entity.ClearDomainEvents();
+            }
 
-        var domainEvents = aggregates
-            .SelectMany(x => x.DomainEvents)
-            .ToList();
-
-        aggregates.ForEach(x => x.ClearDomainEvents());
+            return events;
+        })
+        .ToList();
 
         return domainEvents;
     }
-    private static OutboxMessage ToOutboxMessage(IDomainEvent domainEvent)
+    private static OutboxMessage ToOutboxMessage(DomainEvent domainEvent)
     {
         var payload = DomainEventSerializer.Serialize(domainEvent, out var version);
 
@@ -92,8 +94,6 @@ public class UnitOfWork : IUnitOfWork
             type: domainEvent.GetType().AssemblyQualifiedName!,
             payload: payload,
             version: version,
-            occurredOnUtc: domainEvent.OccurredOn
-        );
+            occurredOnUtc: domainEvent.OccurredOnUtc);
     }
-
 }

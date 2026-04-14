@@ -1,49 +1,31 @@
-﻿using Microsoft.EntityFrameworkCore;
-using System.Linq.Expressions;
-using ValenceHub.Domain.Interfaces;
-using ValenceHub.Persistence.Write.Interceptors;
+using System;
+using Microsoft.EntityFrameworkCore;
+using ValenceHub.Domain.Users;
 using ValenceHub.Persistence.Write.Outbox.Models;
 
 namespace ValenceHub.Persistence.Write.Contexts;
 
 public class ValenceHubWriteDbContext : DbContext
 {
-    private readonly AuditingInterceptor _auditInterceptor;
-    private readonly SoftDeleteInterceptor _softDeleteInterceptor;
+    private const string ConfigurationNamespacePrefix = "ValenceHub.Persistence.Write.Configurations";
 
-    public ValenceHubWriteDbContext(
-        DbContextOptions<ValenceHubWriteDbContext> options,
-        AuditingInterceptor auditInterceptor,
-        SoftDeleteInterceptor softDeleteInterceptor)
-        : base(options) {
-        _auditInterceptor = auditInterceptor;
-        _softDeleteInterceptor = softDeleteInterceptor;
-    }
-    public DbSet<OutboxMessage> OutboxMessages => Set<OutboxMessage>();
-
-    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+    public ValenceHubWriteDbContext(DbContextOptions<ValenceHubWriteDbContext> options)
+        : base(options)
     {
-        optionsBuilder.AddInterceptors(_auditInterceptor, _softDeleteInterceptor);
     }
+
+    public DbSet<OutboxMessage> OutboxMessages => Set<OutboxMessage>();
+    public DbSet<User> Users => Set<User>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        modelBuilder.ApplyConfigurationsFromAssembly(typeof(ValenceHubWriteDbContext).Assembly);
+        modelBuilder.ApplyConfigurationsFromAssembly(
+            typeof(ValenceHubWriteDbContext).Assembly,
+            IsWriteConfigurationType);
 
-        foreach (var entityType in modelBuilder.Model.GetEntityTypes())
-        {
-            if (typeof(ISoftDelete).IsAssignableFrom(entityType.ClrType))
-            {
-                var parameter = Expression.Parameter(entityType.ClrType, "e");
-                var propertyMethod = typeof(EF).GetMethod("Property")!
-                    .MakeGenericMethod(typeof(bool));
-                var isDeletedExpression =
-                    Expression.Call(propertyMethod, parameter, Expression.Constant("IsDeleted"));
-                var filter = Expression.Lambda(
-                    Expression.Equal(isDeletedExpression, Expression.Constant(false)),
-                    parameter);
-
-                modelBuilder.Entity(entityType.ClrType).HasQueryFilter(filter);
-            }
-        }
+        base.OnModelCreating(modelBuilder);
     }
+
+    private static bool IsWriteConfigurationType(Type type)
+        => type.Namespace?.StartsWith(ConfigurationNamespacePrefix, StringComparison.Ordinal) == true;
 }

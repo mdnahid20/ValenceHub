@@ -7,8 +7,18 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Common\**" />
+    <Compile Remove="Write\Contexts\ValenceHubWriteDbContext.cs\**" />
+    <EmbeddedResource Remove="Common\**" />
+    <EmbeddedResource Remove="Write\Contexts\ValenceHubWriteDbContext.cs\**" />
+    <None Remove="Common\**" />
+    <None Remove="Write\Contexts\ValenceHubWriteDbContext.cs\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\ValenceHub.Application\ValenceHub.Application.csproj" />
     <ProjectReference Include="..\ValenceHub.Domain\ValenceHub.Domain.csproj" />
+    <ProjectReference Include="..\ValenceHub.Infrastructure\ValenceHub.Infrastructure.csproj" />
   </ItemGroup>
 
   <ItemGroup>
@@ -23,11 +33,10 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
+    <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="10.0.3" />
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Common\" />
-    <Folder Include="Read\Models\" />
     <Folder Include="Read\Idempotency\" />
     <Folder Include="Write\Migrations\" />
   </ItemGroup>

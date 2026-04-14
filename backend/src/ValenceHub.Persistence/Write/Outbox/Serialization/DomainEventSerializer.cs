@@ -1,6 +1,4 @@
-using System;
-using System.Collections.Generic;
-using ValenceHub.Domain.Common.Events;
+using ValenceHub.Domain.Events;
 
 namespace ValenceHub.Persistence.Write.Outbox.Serialization;
 
@@ -12,14 +10,14 @@ public static class DomainEventSerializer
             { 1, new DomainEventSerializerV1() }
         };
 
-    public static string Serialize(IDomainEvent domainEvent, out int version)
+    public static string Serialize(DomainEvent domainEvent, out int version)
     {
         var serializer = _serializers[1];
         version = serializer.Version;
         return serializer.Serialize(domainEvent);
     }
 
-    public static IDomainEvent Deserialize(
+    public static DomainEvent Deserialize(
         string type,
         string payload,
         int version)
@@ -30,4 +28,3 @@ public static class DomainEventSerializer
         return serializer.Deserialize(payload, eventType);
     }
 }
-

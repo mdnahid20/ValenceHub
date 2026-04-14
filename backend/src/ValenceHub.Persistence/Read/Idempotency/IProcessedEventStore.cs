@@ -7,7 +7,7 @@ public interface IProcessedEventStore
     Task MarkProcessedAsync(
         Guid eventId,
         string eventType,
-        DateTime processedOnUtc,
+        DateTimeOffset processedOnUtc,
         CancellationToken cancellationToken = default);
 }
 

@@ -40,6 +40,9 @@ public static class DependencyInjection
 
         services.AddScoped(typeof(IReadRepository<>), typeof(ReadRepository<>));
         services.AddScoped(typeof(IWriteRepository<>), typeof(WriteRepository<>));
+        // Register concrete user repository for write operations
+        services.AddScoped<IRepository<ValenceHub.Domain.Users.User>, ValenceHub.Persistence.Write.Repositories.UserRepository>();
+        services.AddScoped<IUserRepository, ValenceHub.Persistence.Write.Repositories.UserRepository>();
         services.AddScoped<IUnitOfWork, UnitOfWork>();
 
         services.AddScoped<INotificationHandler<DomainEventNotification<UserCreatedDomainEvent>>, UserRegisteredProjection>();

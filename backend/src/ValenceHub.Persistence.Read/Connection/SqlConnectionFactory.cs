@@ -1,9 +1,12 @@
-﻿using Microsoft.Data.SqlClient;
+using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Configuration;
 using System.Data;
+using ValenceHub.Infrastructure.Attributes;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace ValenceHub.Persistence.Read.Connection;
 
+[AutoRegister(ServiceLifetime.Singleton, ServiceType = typeof(IDbConnectionFactory))]
 public class SqlConnectionFactory : IDbConnectionFactory
 {
     private readonly IConfiguration _configuration;

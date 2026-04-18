@@ -10,6 +10,7 @@ using ValenceHub.Application.Messaging;
 using ValenceHub.Domain.Users.Events;
 using ValenceHub.Infrastructure.Services;
 using ValenceHub.Persistence.Read.Connection;
+using ValenceHub.Infrastructure.Extensions;
 using ValenceHub.Persistence.Read.Contexts;
 using ValenceHub.Persistence.Read.Dapper.QueryExecutor;
 using ValenceHub.Persistence.Read.Idempotency;
@@ -31,23 +32,16 @@ public static class DependencyInjection
         services.AddDbContext<ValenceHubWriteDbContext>(options => options.UseSqlServer(configuration.GetConnectionString("WriteDb")));
         services.AddDbContext<ReadDbContext>(options => options.UseSqlServer(configuration.GetConnectionString("ReadDb")));
 
-        services.AddSingleton<IDbConnectionFactory, SqlConnectionFactory>();
-        services.AddSingleton<SystemDateTimeOffsetProvider>();
-        services.AddSingleton<IClock>(sp => sp.GetRequiredService<SystemDateTimeOffsetProvider>());
-        services.AddSingleton<IDateTimeOffsetProvider>(sp => sp.GetRequiredService<SystemDateTimeOffsetProvider>());
-        services.AddScoped<ISqlQueryExecutor, SqlQueryExecutor>();
-        services.AddScoped<IProcessedEventStore, ProcessedEventStore>();
+        // Auto-register services from both Persistence and Infrastructure assemblies
+        services.AddAutoRegisteredServices(
+            typeof(DependencyInjection).Assembly,
+            typeof(SystemDateTimeOffsetProvider).Assembly
+        );
 
         services.AddScoped(typeof(IReadRepository<>), typeof(ReadRepository<>));
         services.AddScoped(typeof(IWriteRepository<>), typeof(WriteRepository<>));
-        // Register concrete user repository for write operations
-        services.AddScoped<IRepository<ValenceHub.Domain.Users.User>, ValenceHub.Persistence.Write.Repositories.UserRepository>();
-        services.AddScoped<IUserRepository, ValenceHub.Persistence.Write.Repositories.UserRepository>();
         services.AddScoped<IUnitOfWork, UnitOfWork>();
 
-        services.AddScoped<INotificationHandler<DomainEventNotification<UserCreatedDomainEvent>>, UserRegisteredProjection>();
-        services.AddScoped<INotificationHandler<DomainEventNotification<UserContactUpdatedDomainEvent>>, UserRegisteredProjection>();
-        services.AddScoped<INotificationHandler<DomainEventNotification<UserDeletedDomainEvent>>, UserRegisteredProjection>();
         services.AddScoped<DomainEventDispatcher>();
         services.AddScoped<IDomainEventDispatcher>(sp => sp.GetRequiredService<DomainEventDispatcher>());
         services.AddScoped<OutboxProcessingJob>();
@@ -55,3 +49,4 @@ public static class DependencyInjection
         return services;
     }
 }
+

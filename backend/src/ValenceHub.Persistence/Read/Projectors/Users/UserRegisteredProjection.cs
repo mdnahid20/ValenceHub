@@ -1,11 +1,14 @@
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using ValenceHub.Domain.Users.Events;
+using ValenceHub.Infrastructure.Attributes;
 using ValenceHub.Persistence.Read.Contexts;
 using ValenceHub.Persistence.Read.Models.Users;
 
 namespace ValenceHub.Persistence.Read.Projectors.Users;
 
+[AutoRegister(ServiceLifetime.Scoped)]
 public sealed class UserRegisteredProjection :
     INotificationHandler<DomainEventNotification<UserCreatedDomainEvent>>,
     INotificationHandler<DomainEventNotification<UserContactUpdatedDomainEvent>>,

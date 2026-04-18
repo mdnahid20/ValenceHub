@@ -1,11 +1,14 @@
 using System.Linq.Expressions;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using ValenceHub.Application.Abstractions.Repositories;
 using ValenceHub.Domain.Users;
+using ValenceHub.Infrastructure.Attributes;
 using ValenceHub.Persistence.Write.Contexts;
 
 namespace ValenceHub.Persistence.Write.Repositories;
 
+[AutoRegister(ServiceLifetime.Scoped)]
 public class UserRepository : IRepository<User>, IUserRepository
 {
     private readonly ValenceHubWriteDbContext _db;
@@ -14,17 +17,22 @@ public class UserRepository : IRepository<User>, IUserRepository
 
     public IQueryable<User> Query() => _db.Users.AsQueryable();
 
+    public IQueryable<User> QueryIncludingDeleted() => _db.Users.IgnoreQueryFilters().AsQueryable();
+
     public async Task<User?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
         => await _db.Users.FindAsync(new object[] { id }, cancellationToken) as User;
+
+    public async Task<User?> GetByIdIncludingDeletedAsync(Guid id, CancellationToken cancellationToken = default)
+        => await _db.Users.IgnoreQueryFilters().FirstOrDefaultAsync(u => u.Id == id, cancellationToken);
 
     public async Task<User?> SingleOrDefaultAsync(Expression<Func<User, bool>> predicate, CancellationToken cancellationToken = default)
         => await _db.Users.SingleOrDefaultAsync(predicate, cancellationToken);
 
     public async Task<IReadOnlyList<User>> ListAsync(CancellationToken cancellationToken = default)
-        => await _db.Users.AsNoTracking().ToListAsync(cancellationToken);
+        => await _db.Users.ToListAsync(cancellationToken);
 
     public async Task<IReadOnlyList<User>> ListAsync(Expression<Func<User, bool>> predicate, CancellationToken cancellationToken = default)
-        => await _db.Users.AsNoTracking().Where(predicate).ToListAsync(cancellationToken);
+        => await _db.Users.Where(predicate).ToListAsync(cancellationToken);
 
     public async Task AddAsync(User entity, CancellationToken cancellationToken = default)
         => await _db.Users.AddAsync(entity, cancellationToken);
@@ -38,4 +46,14 @@ public class UserRepository : IRepository<User>, IUserRepository
 
     public async Task<User?> GetByPhoneNumberAsync(string phoneNumber, CancellationToken cancellationToken = default)
         => await _db.Users.SingleOrDefaultAsync(u => u.PhoneNumber != null && u.PhoneNumber.Value == phoneNumber, cancellationToken);
+
+    public async Task<bool> ExistsAsync(Guid id, CancellationToken cancellationToken = default)
+        => await _db.Users.AnyAsync(u => u.Id == id, cancellationToken);
+
+    public async Task<bool> ExistsByEmailAsync(string email, CancellationToken cancellationToken = default)
+        => await _db.Users.AnyAsync(u => u.Email != null && u.Email.Value == email, cancellationToken);
+
+    public async Task<bool> ExistsByPhoneNumberAsync(string phoneNumber, CancellationToken cancellationToken = default)
+        => await _db.Users.AnyAsync(u => u.PhoneNumber != null && u.PhoneNumber.Value == phoneNumber, cancellationToken);
 }
+

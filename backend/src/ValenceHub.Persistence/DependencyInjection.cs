@@ -5,7 +5,6 @@ using Microsoft.Extensions.DependencyInjection;
 using ValenceHub.Application.Abstractions.Services;
 using ValenceHub.Application.Abstractions.Repositories;
 using ValenceHub.Application.Abstractions.Transactions;
-using ValenceHub.Application.Common.Clock;
 using ValenceHub.Application.Messaging;
 using ValenceHub.Domain.Users.Events;
 using ValenceHub.Infrastructure.Services;
@@ -17,6 +16,7 @@ using ValenceHub.Persistence.Read.Idempotency;
 using ValenceHub.Persistence.Read.Projectors;
 using ValenceHub.Persistence.Read.Projectors.Users;
 using ValenceHub.Persistence.Read.Repositories.Base;
+using ValenceHub.Persistence.Read.Repositories.Users;
 using ValenceHub.Persistence.Write.Contexts;
 using ValenceHub.Persistence.Write.Dispatchers;
 using ValenceHub.Persistence.Write.Outbox.Processors;
@@ -42,11 +42,6 @@ public static class DependencyInjection
         services.AddScoped(typeof(IWriteRepository<>), typeof(WriteRepository<>));
         services.AddScoped<IUnitOfWork, UnitOfWork>();
 
-        services.AddScoped<DomainEventDispatcher>();
-        services.AddScoped<IDomainEventDispatcher>(sp => sp.GetRequiredService<DomainEventDispatcher>());
-        services.AddScoped<OutboxProcessingJob>();
-
         return services;
     }
 }
-

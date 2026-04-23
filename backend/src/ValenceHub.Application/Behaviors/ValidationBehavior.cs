@@ -1,4 +1,5 @@
 using FluentValidation;
+using Microsoft.Extensions.DependencyInjection;
 using ValenceHub.Application.Abstractions.Commands;
 using ValenceHub.Application.Abstractions.Results;
 

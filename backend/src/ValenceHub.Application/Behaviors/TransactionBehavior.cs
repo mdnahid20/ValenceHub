@@ -1,3 +1,4 @@
+using Microsoft.Extensions.DependencyInjection;
 using ValenceHub.Application.Abstractions.Commands;
 using ValenceHub.Application.Abstractions.Results;
 using ValenceHub.Application.Abstractions.Transactions;

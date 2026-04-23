@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using ValenceHub.Application.Common.Clock;
+using ValenceHub.Application.Abstractions.Services;
 using ValenceHub.Domain.Common.Enums;
 using ValenceHub.Persistence.Read.Models.Users;
 
@@ -14,11 +14,11 @@ namespace ValenceHub.Persistence.Read.Helpers.Audit;
 
 public sealed class AuditInterceptor : SaveChangesInterceptor
 {
-    private readonly IClock _clock;
+    private readonly IDateTimeOffsetProvider _dateTimeProvider;
 
-    public AuditInterceptor(IClock clock)
+    public AuditInterceptor(IDateTimeOffsetProvider dateTimeProvider)
     {
-        _clock = clock;
+        _dateTimeProvider = dateTimeProvider;
     }
 
     public override ValueTask<InterceptionResult<int>> SavingChangesAsync(
@@ -95,7 +95,7 @@ public sealed class AuditInterceptor : SaveChangesInterceptor
                 Action = action,
                 ActionBy = Guid.Empty,
                 EventId = eventId,
-                OccurredOnUtc = _clock.UtcNow,
+                OccurredOnUtc = _dateTimeProvider.UtcNow,
                 ChangedData = changes
             });
         }

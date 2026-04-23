@@ -1,6 +1,8 @@
 using Microsoft.EntityFrameworkCore;
-using ValenceHub.Application.Common.Clock;
+using Microsoft.Extensions.DependencyInjection;
+using ValenceHub.Application.Abstractions.Services;
 using ValenceHub.Application.Messaging;
+using ValenceHub.Infrastructure.Attributes;
 using ValenceHub.Persistence.Read.Idempotency;
 using ValenceHub.Persistence.Write.Contexts;
 using ValenceHub.Persistence.Write.Outbox.Models;
@@ -8,23 +10,24 @@ using ValenceHub.Persistence.Write.Outbox.Serialization;
 
 namespace ValenceHub.Persistence.Write.Outbox.Processors;
 
+[AutoRegister(ServiceLifetime.Scoped)]
 public sealed class OutboxProcessingJob
 {
     private readonly ValenceHubWriteDbContext _context;
+    private readonly IDateTimeOffsetProvider _dateTimeProvider;
     private readonly IDomainEventDispatcher _dispatcher;
     private readonly IProcessedEventStore _processedEventStore;
-    private readonly IClock _clock;
 
     public OutboxProcessingJob(
         ValenceHubWriteDbContext context,
+        IDateTimeOffsetProvider dateTimeProvider,
         IDomainEventDispatcher dispatcher,
-        IProcessedEventStore processedEventStore,
-        IClock clock)
+        IProcessedEventStore processedEventStore)
     {
         _context = context;
+        _dateTimeProvider = dateTimeProvider;
         _dispatcher = dispatcher;
         _processedEventStore = processedEventStore;
-        _clock = clock;
     }
 
     public async Task ExecuteAsync(CancellationToken cancellationToken = default)
@@ -46,7 +49,7 @@ public sealed class OutboxProcessingJob
             {
                 if (await _processedEventStore.HasProcessedAsync(message.Id, cancellationToken))
                 {
-                    message.MarkProcessed(_clock.UtcNow);
+                    message.MarkProcessed(_dateTimeProvider.UtcNow);
                     continue;
                 }
 
@@ -60,10 +63,10 @@ public sealed class OutboxProcessingJob
                 await _processedEventStore.MarkProcessedAsync(
                     message.Id,
                     message.Type,
-                    _clock.UtcNow,
+                    _dateTimeProvider.UtcNow,
                     cancellationToken);
 
-                message.MarkProcessed(_clock.UtcNow);
+                message.MarkProcessed(_dateTimeProvider.UtcNow);
             }
             catch (Exception ex)
             {
@@ -74,3 +77,4 @@ public sealed class OutboxProcessingJob
         await _context.SaveChangesAsync(cancellationToken);
     }
 }
+

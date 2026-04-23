@@ -9,4 +9,8 @@ public interface ICommandDispatcher
        TCommand command,
        CancellationToken cancellationToken = default)
        where TCommand : ICommand;
+
+    Task<Result<TResponse>> Dispatch<TResponse>(
+       ICommand<TResponse> command,
+       CancellationToken cancellationToken = default);
 }

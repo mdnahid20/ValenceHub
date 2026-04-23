@@ -25,10 +25,16 @@ public static class DependencyInjection
         services.AddValidatorsFromAssembly(assembly);
 
         services.AddScoped<ICommandDispatcher, CommandDispatcher>();
+        services.AddScoped<IQueryDispatcher, QueryDispatcher>();
+        services.AddScoped(typeof(ICommandBehavior<>), typeof(ExceptionHandlingBehavior<>));
         services.AddScoped(typeof(ICommandBehavior<>), typeof(TransactionBehavior<>));
+        services.AddScoped(typeof(ICommandBehavior<>), typeof(DomainEventsBehavior<>));
         services.AddScoped(typeof(ICommandBehavior<>), typeof(ValidationBehavior<>));
         services.AddScoped(typeof(ICommandBehavior<>), typeof(LoggingBehavior<>));
         services.AddScoped(typeof(ICommandBehavior<>), typeof(PerformanceBehavior<>));
+
+        services.AddScoped(typeof(IQueryBehavior<,>), typeof(LoggingQueryBehavior<,>));
+        services.AddScoped(typeof(IQueryBehavior<,>), typeof(PerformanceQueryBehavior<,>));
 
         return services;
     }

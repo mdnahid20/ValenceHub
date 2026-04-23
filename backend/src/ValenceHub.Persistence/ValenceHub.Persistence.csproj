@@ -8,11 +8,8 @@
 
   <ItemGroup>
     <Compile Remove="Common\**" />
-    <Compile Remove="Write\Contexts\ValenceHubWriteDbContext.cs\**" />
     <EmbeddedResource Remove="Common\**" />
-    <EmbeddedResource Remove="Write\Contexts\ValenceHubWriteDbContext.cs\**" />
     <None Remove="Common\**" />
-    <None Remove="Write\Contexts\ValenceHubWriteDbContext.cs\**" />
   </ItemGroup>
 
   <ItemGroup>

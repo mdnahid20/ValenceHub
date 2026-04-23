@@ -67,6 +67,15 @@ public class UnitOfWork : IUnitOfWork
         await _context.DisposeAsync();
     }
 
+    public IReadOnlyCollection<dynamic> GetAggregateRoots()
+    {
+        return _context.ChangeTracker
+            .Entries<IHasDomainEvents>()
+            .Select(entry => entry.Entity)
+            .Cast<dynamic>()
+            .ToList()!;
+    }
+
     private IReadOnlyList<DomainEvent> ExtractDomainEvents()
     {
         var domainEvents = _context.ChangeTracker

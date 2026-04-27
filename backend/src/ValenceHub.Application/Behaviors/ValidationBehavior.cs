@@ -5,8 +5,8 @@ using ValenceHub.Application.Abstractions.Results;
 
 namespace ValenceHub.Application.Behaviors;
 
-public sealed class ValidationBehavior<TCommand> : ICommandBehavior<TCommand>
-    where TCommand : ICommand
+public sealed class ValidationBehavior<TCommand, TResponse> : ICommandBehavior<TCommand, TResponse>
+    where TCommand : ICommand<TResponse>
 {
     private readonly IEnumerable<IValidator<TCommand>> _validators;
 
@@ -15,9 +15,9 @@ public sealed class ValidationBehavior<TCommand> : ICommandBehavior<TCommand>
         _validators = validators;
     }
 
-    public async Task<Result> Handle(
+    public async Task<Result<TResponse>> Handle(
         TCommand command,
-        CommandHandlerDelegate next,
+        CommandHandlerDelegate<TResponse> next,
         CancellationToken cancellationToken)
     {
         if (!_validators.Any())
@@ -37,7 +37,7 @@ public sealed class ValidationBehavior<TCommand> : ICommandBehavior<TCommand>
             var message = string.Join(", ",
                 failures.Select(f => f.ErrorMessage));
 
-            return Result.Failure(new Error(
+            return Result<TResponse>.Failure(new Error(
                 "Validation",
                 message));
         }

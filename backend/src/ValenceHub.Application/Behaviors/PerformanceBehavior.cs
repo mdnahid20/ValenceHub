@@ -7,21 +7,21 @@ using ValenceHub.Application.Abstractions.Results;
 
 namespace ValenceHub.Application.Behaviors;
 
-public sealed class PerformanceBehavior<TCommand>
-    : ICommandBehavior<TCommand>
-    where TCommand : ICommand
+public sealed class PerformanceBehavior<TCommand, TResponse>
+    : ICommandBehavior<TCommand, TResponse>
+    where TCommand : ICommand<TResponse>
 {
-    private readonly ILogger<PerformanceBehavior<TCommand>> _logger;
+    private readonly ILogger<PerformanceBehavior<TCommand, TResponse>> _logger;
 
     public PerformanceBehavior(
-        ILogger<PerformanceBehavior<TCommand>> logger)
+        ILogger<PerformanceBehavior<TCommand, TResponse>> logger)
     {
         _logger = logger;
     }
 
-    public async Task<Result> Handle(
+    public async Task<Result<TResponse>> Handle(
         TCommand command,
-        CommandHandlerDelegate next,
+        CommandHandlerDelegate<TResponse> next,
         CancellationToken cancellationToken)
     {
         var sw = Stopwatch.StartNew();

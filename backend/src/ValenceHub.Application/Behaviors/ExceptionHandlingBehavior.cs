@@ -5,20 +5,20 @@ using ValenceHub.Application.Abstractions.Results;
 
 namespace ValenceHub.Application.Behaviors;
 
-public sealed class ExceptionHandlingBehavior<TCommand>
-    : ICommandBehavior<TCommand>
-    where TCommand : ICommand
+public sealed class ExceptionHandlingBehavior<TCommand, TResponse>
+    : ICommandBehavior<TCommand, TResponse>
+    where TCommand : ICommand<TResponse>
 {
-    private readonly ILogger<ExceptionHandlingBehavior<TCommand>> _logger;
+    private readonly ILogger<ExceptionHandlingBehavior<TCommand, TResponse>> _logger;
 
-    public ExceptionHandlingBehavior(ILogger<ExceptionHandlingBehavior<TCommand>> logger)
+    public ExceptionHandlingBehavior(ILogger<ExceptionHandlingBehavior<TCommand, TResponse>> logger)
     {
         _logger = logger;
     }
 
-    public async Task<Result> Handle(
+    public async Task<Result<TResponse>> Handle(
         TCommand command,
-        CommandHandlerDelegate next,
+        CommandHandlerDelegate<TResponse> next,
         CancellationToken cancellationToken)
     {
         try
@@ -28,14 +28,14 @@ public sealed class ExceptionHandlingBehavior<TCommand>
         catch (Exception exception)
         {
             var commandName = typeof(TCommand).Name;
-            
+
             _logger.LogError(
                 exception,
                 "Unhandled exception occurred while handling command {Command}: {Message}",
                 commandName,
                 exception.Message);
 
-            return Result.Failure(new Error(
+            return Result<TResponse>.Failure(new Error(
                 "ExceptionHandling",
                 $"An unexpected error occurred while processing {commandName}: {exception.Message}"));
         }

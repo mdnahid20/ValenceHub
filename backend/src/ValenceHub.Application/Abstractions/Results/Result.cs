@@ -8,20 +8,26 @@ public class Result
 {
     public bool IsSuccess { get; }
     public bool IsFailure => !IsSuccess;
-    public Error? Error { get; }
+    public Error Error { get; }
 
-    protected Result(bool isSuccess, Error? error)
+    protected Result(bool isSuccess, Error error)
     {
+        if (isSuccess && error != Error.None)
+            throw new ArgumentException("Success result cannot have an error.");
+
+        if (!isSuccess && error == Error.None)
+            throw new ArgumentException("Failure result must have an error.");
+
         IsSuccess = isSuccess;
         Error = error;
     }
 
-    public static Result Success() => new Result(true, null);
+    public static Result Success() => new(true, Error.None);
 
     public static Result Failure(Error error)
     {
         if (error is null) throw new ArgumentNullException(nameof(error));
-        return new Result(false, error);
+        return new(false, error);
     }
 
     public override string ToString() => IsSuccess ? "Success" : $"Failure: {Error}";
@@ -32,31 +38,29 @@ public class Result
 /// </summary>
 public sealed class Result<T> : Result
 {
-    private readonly T _value = default!;
+    public T? Value { get; }
 
-    public T Value
-    {
-        get
-        {
-            if (IsFailure) throw new InvalidOperationException("Cannot access the value of a failed Result.");
-            return _value;
-        }
-    }
+    private Result(T value) : base(true, Error.None)
+        => Value = value;
 
-    private Result(T value, bool isSuccess, Error? error) : base(isSuccess, error)
-    {
-        _value = value!;
-    }
+    private Result(Error error) : base(false, error)
+        => Value = default;
 
     public static Result<T> Success(T value)
     {
         if (value is null) throw new ArgumentNullException(nameof(value));
-        return new Result<T>(value, true, null);
+        return new(value);
     }
 
     public static new Result<T> Failure(Error error)
     {
         if (error is null) throw new ArgumentNullException(nameof(error));
-        return new Result<T>(default!, false, error);
+        return new(error);
     }
+
+    /// <summary>
+    /// Implicit conversion from T to Result<T>.Success(value)
+    /// </summary>
+    public static implicit operator Result<T>(T value)
+        => Success(value);
 }

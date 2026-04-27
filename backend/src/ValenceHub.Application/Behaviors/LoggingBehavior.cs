@@ -5,20 +5,20 @@ using ValenceHub.Application.Abstractions.Results;
 
 namespace ValenceHub.Application.Behaviors;
 
-public sealed class LoggingBehavior<TCommand>
-    : ICommandBehavior<TCommand>
-    where TCommand : ICommand
+public sealed class LoggingBehavior<TCommand, TResponse>
+    : ICommandBehavior<TCommand, TResponse>
+    where TCommand : ICommand<TResponse>
 {
-    private readonly ILogger<LoggingBehavior<TCommand>> _logger;
+    private readonly ILogger<LoggingBehavior<TCommand, TResponse>> _logger;
 
-    public LoggingBehavior(ILogger<LoggingBehavior<TCommand>> logger)
+    public LoggingBehavior(ILogger<LoggingBehavior<TCommand, TResponse>> logger)
     {
         _logger = logger;
     }
 
-    public async Task<Result> Handle(
+    public async Task<Result<TResponse>> Handle(
         TCommand command,
-        CommandHandlerDelegate next,
+        CommandHandlerDelegate<TResponse> next,
         CancellationToken cancellationToken)
     {
         var name = typeof(TCommand).Name;

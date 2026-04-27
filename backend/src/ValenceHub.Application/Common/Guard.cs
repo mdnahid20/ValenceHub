@@ -46,12 +46,5 @@ namespace ValenceHub.Application.Common
                 ? Result<T>.Failure(new Error(string.Empty, errorMessage))
                 : Result<T>.Success(value);
         }
-
-        public static Result Against(bool predicate, string errorMessage)
-        {
-            return predicate
-                ? Result.Failure(new Error(string.Empty, errorMessage))
-                : Result.Success();
-        }
     }
 }

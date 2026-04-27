@@ -5,9 +5,9 @@ using ValenceHub.Application.Abstractions.Transactions;
 
 namespace ValenceHub.Application.Behaviors;
 
-public sealed class TransactionBehavior<TCommand>
-    : ICommandBehavior<TCommand>
-    where TCommand : ICommand
+public sealed class TransactionBehavior<TCommand, TResponse>
+    : ICommandBehavior<TCommand, TResponse>
+    where TCommand : ICommand<TResponse>
 {
     private readonly IUnitOfWork _unitOfWork;
 
@@ -16,9 +16,9 @@ public sealed class TransactionBehavior<TCommand>
         _unitOfWork = unitOfWork;
     }
 
-    public async Task<Result> Handle(
+    public async Task<Result<TResponse>> Handle(
         TCommand command,
-        CommandHandlerDelegate next,
+        CommandHandlerDelegate<TResponse> next,
         CancellationToken cancellationToken)
     {
         await _unitOfWork.BeginTransactionAsync(cancellationToken);
@@ -29,6 +29,7 @@ public sealed class TransactionBehavior<TCommand>
 
             if (result.IsSuccess)
             {
+                await _unitOfWork.SaveChangesAsync(cancellationToken);
                 await _unitOfWork.CommitAsync(cancellationToken);
             }
             else

@@ -1,5 +1,6 @@
 # --- Environment ---
 .env
+.env.*
 
 # --- .NET / C# ---
 bin/
@@ -10,9 +11,6 @@ obj/
 .vs/
 .vscode/
 *.vspscc
-*.dll
-*.exe
-*.pdb
 
 # Ignore local configuration files
 appsettings.Development.json
@@ -47,3 +45,11 @@ Thumbs.db
 # --- Database / misc ---
 *.db
 *.localdb
+*.mdf
+*.ldf
+
+
+# --- Logs --- 
+**/Logs/
+*.log
+*.txt

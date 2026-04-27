@@ -3,7 +3,7 @@ using ValenceHub.Application.Abstractions.Results;
 
 namespace ValenceHub.Application.Abstractions.Commands;
 
-public interface ICommandHandler<in TCommand> : IRequestHandler<TCommand, Result>
+public interface ICommandHandler<in TCommand> : ICommandHandler<TCommand, Unit>
     where TCommand : ICommand
 {
 }

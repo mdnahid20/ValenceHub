@@ -8,9 +8,9 @@ using ValenceHub.Domain.Events;
 
 namespace ValenceHub.Application.Behaviors;
 
-public sealed class DomainEventsBehavior<TCommand>
-    : ICommandBehavior<TCommand>
-    where TCommand : ICommand
+public sealed class DomainEventsBehavior<TCommand, TResponse>
+    : ICommandBehavior<TCommand, TResponse>
+    where TCommand : ICommand<TResponse>
 {
     private readonly IUnitOfWork _unitOfWork;
     private readonly IDomainEventDispatcher _domainEventDispatcher;
@@ -23,9 +23,9 @@ public sealed class DomainEventsBehavior<TCommand>
         _domainEventDispatcher = domainEventDispatcher;
     }
 
-    public async Task<Result> Handle(
+    public async Task<Result<TResponse>> Handle(
         TCommand command,
-        CommandHandlerDelegate next,
+        CommandHandlerDelegate<TResponse> next,
         CancellationToken cancellationToken)
     {
         var result = await next(cancellationToken);

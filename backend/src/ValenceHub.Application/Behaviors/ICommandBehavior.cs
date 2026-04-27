@@ -5,13 +5,13 @@ using ValenceHub.Application.Abstractions.Results;
 
 namespace ValenceHub.Application.Behaviors;
 
-public delegate Task<Result> CommandHandlerDelegate(CancellationToken cancellationToken);
+public delegate Task<Result<TResponse>> CommandHandlerDelegate<TResponse>(CancellationToken cancellationToken);
 
-public interface ICommandBehavior<TCommand>
-    where TCommand : ICommand
+public interface ICommandBehavior<TCommand, TResponse>
+    where TCommand : ICommand<TResponse>
 {
-    Task<Result> Handle(
+    Task<Result<TResponse>> Handle(
         TCommand command,
-        CommandHandlerDelegate next,
+        CommandHandlerDelegate<TResponse> next,
         CancellationToken cancellationToken);
 }

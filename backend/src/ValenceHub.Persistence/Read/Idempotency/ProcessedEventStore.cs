@@ -1,8 +1,11 @@
 using Dapper;
+using Microsoft.Extensions.DependencyInjection;
+using ValenceHub.Infrastructure.Attributes;
 using ValenceHub.Persistence.Read.Connection;
 
 namespace ValenceHub.Persistence.Read.Idempotency;
 
+[AutoRegister(ServiceLifetime.Scoped)]
 public sealed class ProcessedEventStore : IProcessedEventStore
 {
     private readonly IDbConnectionFactory _connectionFactory;

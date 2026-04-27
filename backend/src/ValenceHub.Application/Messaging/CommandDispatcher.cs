@@ -1,7 +1,7 @@
-using MediatR;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Linq;
+using System.Reflection;
 using ValenceHub.Application.Abstractions.Commands;
 using ValenceHub.Application.Abstractions.Results;
 using ValenceHub.Application.Behaviors;
@@ -11,21 +11,10 @@ namespace ValenceHub.Application.Messaging;
 internal sealed class CommandDispatcher : ICommandDispatcher
 {
     private readonly IServiceProvider _serviceProvider;
-    private readonly IMediator _mediator;
 
-    public CommandDispatcher(IServiceProvider serviceProvider, IMediator mediator)
+    public CommandDispatcher(IServiceProvider serviceProvider)
     {
         _serviceProvider = serviceProvider;
-        _mediator = mediator;
-    }
-
-    public Task<Result> Dispatch<TCommand>(
-        TCommand command,
-        CancellationToken cancellationToken = default)
-        where TCommand : ICommand
-    {
-        ArgumentNullException.ThrowIfNull(command);
-        return DispatchAsync(command, cancellationToken);
     }
 
     public Task<Result<TResponse>> Dispatch<TResponse>(
@@ -33,22 +22,29 @@ internal sealed class CommandDispatcher : ICommandDispatcher
         CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(command);
-        return _mediator.Send(command, cancellationToken);
+
+        var dispatchMethod = typeof(CommandDispatcher)
+            .GetMethod(
+                nameof(DispatchAsync),
+                BindingFlags.Instance | BindingFlags.NonPublic)!
+            .MakeGenericMethod(command.GetType(), typeof(TResponse));
+
+        return (Task<Result<TResponse>>)dispatchMethod.Invoke(this, new object[] { command, cancellationToken })!;
     }
 
-    private Task<Result> DispatchAsync<TCommand>(
+    private Task<Result<TResponse>> DispatchAsync<TCommand, TResponse>(
         TCommand command,
         CancellationToken cancellationToken)
-        where TCommand : ICommand
+        where TCommand : ICommand<TResponse>
     {
-        var handler = _serviceProvider.GetRequiredService<ICommandHandler<TCommand>>();
+        var handler = _serviceProvider.GetRequiredService<ICommandHandler<TCommand, TResponse>>();
 
         var behaviors = _serviceProvider
-            .GetServices<ICommandBehavior<TCommand>>()
+            .GetServices<ICommandBehavior<TCommand, TResponse>>()
             .Reverse()
             .ToList();
 
-        CommandHandlerDelegate handlerDelegate = ct => handler.Handle(command, ct);
+        CommandHandlerDelegate<TResponse> handlerDelegate = ct => handler.Handle(command, ct);
 
         foreach (var behavior in behaviors)
         {

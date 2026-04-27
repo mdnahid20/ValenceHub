@@ -1,15 +1,22 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <ItemGroup>
-    <Compile Remove="Features\**" />
     <Compile Remove="ReadModels\**" />
     <Compile Remove="Validators\**" />
-    <EmbeddedResource Remove="Features\**" />
     <EmbeddedResource Remove="ReadModels\**" />
     <EmbeddedResource Remove="Validators\**" />
-    <None Remove="Features\**" />
     <None Remove="ReadModels\**" />
     <None Remove="Validators\**" />
+  </ItemGroup>
+
+  <!-- Auto-nest Command handlers, validators and Query handlers -->
+  <ItemGroup>
+    <Compile Update="**\*.Handler.cs">
+      <DependentUpon>$([System.String]::Copy('%(Filename)').Replace('.Handler','')).cs</DependentUpon>
+    </Compile>
+    <Compile Update="**\*.Validator.cs">
+      <DependentUpon>$([System.String]::Copy('%(Filename)').Replace('.Validator','')).cs</DependentUpon>
+    </Compile>
   </ItemGroup>
 
   <ItemGroup>
@@ -17,10 +24,12 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="Ardalis.GuardClauses" Version="5.0.0" />
     <PackageReference Include="FluentValidation" Version="12.1.1" />
     <PackageReference Include="FluentValidation.DependencyInjectionExtensions" Version="12.1.1" />
     <PackageReference Include="Mapster" Version="7.4.0" />
     <PackageReference Include="MediatR" Version="14.0.0" />
+    <PackageReference Include="Scrutor" Version="7.0.0" />
   </ItemGroup>
 
   <ItemGroup>

@@ -1,12 +1,9 @@
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
-using ValenceHub.Infrastructure.Attributes;
 using ValenceHub.Persistence.Read.Contexts;
 using ValenceHub.Persistence.Read.Models.Users;
 
 namespace ValenceHub.Persistence.Read.Repositories.Users;
 
-[AutoRegister(ServiceLifetime.Scoped)]
 public sealed class UserReadRepository : IUserReadRepository
 {
     private readonly ReadDbContext _db;

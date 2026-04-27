@@ -23,13 +23,21 @@ internal sealed class UserConfiguration : IEntityTypeConfiguration<User>
             .HasMaxLength(320)
             .HasConversion(
                 value => value == null ? null : value.Value,
-                value => string.IsNullOrWhiteSpace(value) ? null : Email.Create(value).Value);
+                value => string.IsNullOrWhiteSpace(value) ? null : Email.Restore(value));
+
+        builder.HasIndex(x => x.Email)
+            .IsUnique()
+            .HasFilter("[Email] IS NOT NULL");
 
         builder.Property(x => x.PhoneNumber)
             .HasMaxLength(30)
             .HasConversion(
                 value => value == null ? null : value.Value,
-                value => string.IsNullOrWhiteSpace(value) ? null : PhoneNumber.Create(value).Value);
+                value => string.IsNullOrWhiteSpace(value) ? null : PhoneNumber.Restore(value));
+
+        builder.HasIndex(x => x.PhoneNumber)
+            .IsUnique()
+            .HasFilter("[PhoneNumber] IS NOT NULL");
 
         builder.Property(x => x.PasswordHash)
             .HasMaxLength(255)

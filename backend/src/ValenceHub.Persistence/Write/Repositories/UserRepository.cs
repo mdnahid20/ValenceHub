@@ -1,7 +1,8 @@
-using System.Linq.Expressions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using System.Linq.Expressions;
 using ValenceHub.Application.Abstractions.Repositories;
+using ValenceHub.Domain.Common.ValueObjects;
 using ValenceHub.Domain.Users;
 using ValenceHub.Infrastructure.Attributes;
 using ValenceHub.Persistence.Write.Contexts;
@@ -51,9 +52,12 @@ public class UserRepository : IRepository<User>, IUserRepository
         => await _db.Users.AnyAsync(u => u.Id == id, cancellationToken);
 
     public async Task<bool> ExistsByEmailAsync(string email, CancellationToken cancellationToken = default)
-        => await _db.Users.AnyAsync(u => u.Email != null && u.Email.Value == email, cancellationToken);
+        => await _db.Users.AnyAsync(u => u.Email != null && u.Email == Email.Restore(email), cancellationToken);
+
+    public async Task<bool> ExistsByPhoneAsync(string phoneNumber, CancellationToken cancellationToken = default)
+        => await _db.Users.AnyAsync(u => u.PhoneNumber != null && u.PhoneNumber == PhoneNumber.Restore(phoneNumber), cancellationToken);
 
     public async Task<bool> ExistsByPhoneNumberAsync(string phoneNumber, CancellationToken cancellationToken = default)
-        => await _db.Users.AnyAsync(u => u.PhoneNumber != null && u.PhoneNumber.Value == phoneNumber, cancellationToken);
+        => await ExistsByPhoneAsync(phoneNumber, cancellationToken);
 }
 

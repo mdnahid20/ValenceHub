@@ -57,12 +57,12 @@ public sealed class PhoneNumber : ValueObject
         return TryCreate(phone, out result);
     }
 
-    public static Result<PhoneNumber?> Create(string? phone)
+    public static Result<PhoneNumber> Create(string phone)
     {
         var error = TryCreateOptional(phone, out var result);
         return error is null
-            ? Result<PhoneNumber?>.Success(result)
-            : Result<PhoneNumber?>.Failure(error);
+            ? Result<PhoneNumber>.Success(result!)
+            : Result<PhoneNumber>.Failure(error);
     }
 
     public static PhoneNumber Restore(string value)

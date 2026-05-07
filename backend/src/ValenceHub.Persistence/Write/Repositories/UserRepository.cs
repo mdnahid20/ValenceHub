@@ -1,6 +1,6 @@
+using System.Linq.Expressions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
-using System.Linq.Expressions;
 using ValenceHub.Application.Abstractions.Repositories;
 using ValenceHub.Domain.Common.ValueObjects;
 using ValenceHub.Domain.Users;
@@ -42,22 +42,18 @@ public class UserRepository : IRepository<User>, IUserRepository
 
     public void Remove(User entity) => _db.Users.Remove(entity);
 
-    public async Task<User?> GetByEmailAsync(string email, CancellationToken cancellationToken = default)
-        => await _db.Users.SingleOrDefaultAsync(u => u.Email != null && u.Email.Value == email, cancellationToken);
+    public async Task<User?> GetByEmailAsync(Email email, CancellationToken cancellationToken = default)
+        => await _db.Users.SingleOrDefaultAsync(u => u.Email == email, cancellationToken);
 
-    public async Task<User?> GetByPhoneNumberAsync(string phoneNumber, CancellationToken cancellationToken = default)
-        => await _db.Users.SingleOrDefaultAsync(u => u.PhoneNumber != null && u.PhoneNumber.Value == phoneNumber, cancellationToken);
+    public async Task<User?> GetByPhoneNumberAsync(PhoneNumber phoneNumber, CancellationToken cancellationToken = default)
+        => await _db.Users.SingleOrDefaultAsync(u => u.PhoneNumber == phoneNumber, cancellationToken);
 
     public async Task<bool> ExistsAsync(Guid id, CancellationToken cancellationToken = default)
         => await _db.Users.AnyAsync(u => u.Id == id, cancellationToken);
 
-    public async Task<bool> ExistsByEmailAsync(string email, CancellationToken cancellationToken = default)
-        => await _db.Users.AnyAsync(u => u.Email != null && u.Email == Email.Restore(email), cancellationToken);
-
-    public async Task<bool> ExistsByPhoneAsync(string phoneNumber, CancellationToken cancellationToken = default)
-        => await _db.Users.AnyAsync(u => u.PhoneNumber != null && u.PhoneNumber == PhoneNumber.Restore(phoneNumber), cancellationToken);
-
-    public async Task<bool> ExistsByPhoneNumberAsync(string phoneNumber, CancellationToken cancellationToken = default)
-        => await ExistsByPhoneAsync(phoneNumber, cancellationToken);
+    public async Task<bool> ExistsByEmailAsync(Email email, CancellationToken cancellationToken = default)
+        => await _db.Users.AnyAsync(u => u.Email == email, cancellationToken);
+    public async Task<bool> ExistsByPhoneNumberAsync(PhoneNumber phoneNumber, CancellationToken cancellationToken = default)
+        => await _db.Users.AnyAsync(u => u.PhoneNumber == phoneNumber, cancellationToken);
 }
 

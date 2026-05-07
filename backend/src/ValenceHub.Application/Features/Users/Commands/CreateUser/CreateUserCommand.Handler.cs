@@ -15,7 +15,6 @@ public sealed class CreateUserCommandHandler : ICommandHandler<CreateUserCommand
     private readonly IPasswordHashingService _passwordHasher;
     private readonly IDateTimeOffsetProvider _clock;
     private readonly IUnitOfWork _unitOfWork;
-
     public CreateUserCommandHandler(
         IUserRepository userRepository,
         IPasswordHashingService passwordHasher,
@@ -25,7 +24,7 @@ public sealed class CreateUserCommandHandler : ICommandHandler<CreateUserCommand
         _userRepository = Guard.Against.Null(userRepository);
         _passwordHasher = Guard.Against.Null(passwordHasher);
         _clock = Guard.Against.Null(clock);
-        _unitOfWork = Guard.Against.Null(unitOfWork);       
+        _unitOfWork = Guard.Against.Null(unitOfWork);
     }
 
     public async Task<Result<Guid>> Handle(CreateUserCommand request, CancellationToken ct)
@@ -41,6 +40,12 @@ public sealed class CreateUserCommandHandler : ICommandHandler<CreateUserCommand
         var password = Password.Create(request.Password);
         if (password.IsFailure)
             return password.Error.ToResult<Guid>();
+
+        if (await _userRepository.ExistsByEmailAsync(email.Value, ct))
+            return Result<Guid>.Failure(Error.Validation("Email.Exists", "Email already exists"));
+
+        if (await _userRepository.ExistsByPhoneNumberAsync(phone.Value, ct))
+            return Result<Guid>.Failure(Error.Validation("Phone.Exists", "Phone already exists"));
 
         var user = User.Create(
             email.Value,

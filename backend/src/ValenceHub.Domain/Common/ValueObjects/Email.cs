@@ -71,12 +71,12 @@ public sealed class Email : ValueObject
         return TryCreate(email, out result);
     }
 
-    public static Result<Email?> Create(string? email)
+    public static Result<Email> Create(string email)
     {
         var error = TryCreateOptional(email, out var result);
         return error is null
-            ? Result<Email?>.Success(result)
-            : Result<Email?>.Failure(error);
+            ? Result<Email>.Success(result!)
+            : Result<Email>.Failure(error);
     }
 
     public static Email Restore(string value)

@@ -1,5 +1,8 @@
+using Microsoft.AspNetCore.Identity.Data;
 using Microsoft.AspNetCore.Mvc;
-using ValenceHub.Application.Features.Users.Commands.CreateUser;
+using ValenceHub.Api.Contracts.Users;
+using ValenceHub.Api.Extensions;
+using ValenceHub.Api.Mappings;
 using ValenceHub.Application.Messaging;
 using ValenceHub.Persistence.Read.Queries.Users.GetUserById;
 
@@ -21,26 +24,10 @@ public class UsersController : ControllerBase
     }
 
     [HttpPost]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    public async Task<IActionResult> CreateUser(
-        [FromBody] CreateUserRequest request,
-        CancellationToken cancellationToken)
+    public async Task<IActionResult> CreateUser([FromBody] CreateUserRequest request, CancellationToken cancellationToken)
     {
-        var command = new CreateUserCommand
-        {
-            FirstName = request.FirstName,
-            LastName = request.LastName,
-            Email = request.Email,
-            PhoneNumber = request.PhoneNumber,
-            Password = request.Password
-        };
-
-        var result = await _commandDispatcher.Dispatch(command, cancellationToken);
-
-        if (result.IsFailure)
-        {
-            return BadRequest(new { error = result.Error?.Message });
+        var result = await _commandDispatcher.Dispatch(request.ToCommand(), cancellationToken);
+        return result.ToJsonResponse();
         }
 
         return Ok(new { userId = result.Value });

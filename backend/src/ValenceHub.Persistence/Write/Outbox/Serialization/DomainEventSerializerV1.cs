@@ -8,8 +8,12 @@ public sealed class DomainEventSerializerV1 : IDomainEventSerializer
     public int Version => 1;
 
     public string Serialize(DomainEvent domainEvent)
-        => JsonSerializer.Serialize(domainEvent);
+        => JsonSerializer.Serialize(
+            domainEvent,
+            domainEvent.GetType());
 
     public DomainEvent Deserialize(string payload, Type eventType)
-        => (DomainEvent)JsonSerializer.Deserialize(payload, eventType)!;
+        => (DomainEvent)JsonSerializer.Deserialize(
+            payload,
+            eventType)!;
 }

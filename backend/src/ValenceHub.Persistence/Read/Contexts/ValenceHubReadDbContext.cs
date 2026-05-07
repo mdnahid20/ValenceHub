@@ -1,5 +1,6 @@
 using System;
 using Microsoft.EntityFrameworkCore;
+using ValenceHub.Persistence.Read.Models.Integration;
 using ValenceHub.Persistence.Read.Models.Users;
 
 namespace ValenceHub.Persistence.Read.Contexts;
@@ -15,6 +16,7 @@ public class ReadDbContext : DbContext
 
     public DbSet<UserReadModel> Users => Set<UserReadModel>();
     public DbSet<AuditLog> AuditLogs => Set<AuditLog>();
+    public DbSet<ProcessedEventRecord> ProcessedEvents => Set<ProcessedEventRecord>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

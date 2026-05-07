@@ -2,6 +2,7 @@ using Dapper;
 using Microsoft.Extensions.DependencyInjection;
 using ValenceHub.Infrastructure.Attributes;
 using ValenceHub.Persistence.Read.Connection;
+using ValenceHub.Persistence.Read.Models.Integration;
 
 namespace ValenceHub.Persistence.Read.Idempotency;
 
@@ -41,21 +42,18 @@ public sealed class ProcessedEventStore : IProcessedEventStore
         CancellationToken cancellationToken = default)
     {
         const string sql = """
-            INSERT INTO ProcessedEvents (EventId, EventType, ProcessedOnUtc)
-            VALUES (@EventId, @EventType, @ProcessedOnUtc)
+            INSERT INTO ProcessedEvents (Id, EventId, EventType, ProcessedOnUtc)
+            VALUES (@Id, @EventId, @EventType, @ProcessedOnUtc)
             """;
 
         using var connection = await _connectionFactory.CreateConnectionAsync(cancellationToken);
 
+        var record = new ProcessedEventRecord(eventId,eventType,processedOnUtc);
+
         await connection.ExecuteAsync(
             new CommandDefinition(
                 sql,
-                new
-                {
-                    EventId = eventId,
-                    EventType = eventType,
-                    ProcessedOnUtc = processedOnUtc
-                },
+                record,
                 cancellationToken: cancellationToken));
     }
 }

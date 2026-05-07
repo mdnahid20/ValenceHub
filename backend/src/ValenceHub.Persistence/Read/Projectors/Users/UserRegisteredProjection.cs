@@ -1,14 +1,11 @@
 using MediatR;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
 using ValenceHub.Domain.Users.Events;
-using ValenceHub.Infrastructure.Attributes;
 using ValenceHub.Persistence.Read.Contexts;
 using ValenceHub.Persistence.Read.Models.Users;
 
 namespace ValenceHub.Persistence.Read.Projectors.Users;
 
-[AutoRegister(ServiceLifetime.Scoped)]
 public sealed class UserRegisteredProjection :
     INotificationHandler<DomainEventNotification<UserCreatedDomainEvent>>,
     INotificationHandler<DomainEventNotification<UserContactUpdatedDomainEvent>>,
@@ -27,7 +24,26 @@ public sealed class UserRegisteredProjection :
     {
         var e = notification.DomainEvent;
 
-        var user = new UserReadModel
+        var user = await _context.Users
+            .FirstOrDefaultAsync(x => x.Id == e.Id, cancellationToken);
+
+        if (user is not null)
+        {
+            if (user.EventId == e.EventId)
+            {
+                return;
+            }
+
+            user.EventId = e.EventId;
+            user.Email = e.Email;
+            user.PhoneNumber = e.PhoneNumber;
+
+            _context.Users.Update(user);
+            await _context.SaveChangesAsync(cancellationToken);
+            return;
+        }
+
+        user = new UserReadModel
         {
             Id = e.Id,
             EventId = e.EventId,
@@ -49,6 +65,11 @@ public sealed class UserRegisteredProjection :
             .FirstOrDefaultAsync(x => x.Id == e.Id, cancellationToken);
 
         if (user is null)
+        {
+            return;
+        }
+
+        if (user.EventId == e.EventId)
         {
             return;
         }

@@ -10,8 +10,7 @@ public sealed record UserCreatedDomainEvent(
     string? PhoneNumber,
     DateTimeOffset OccurredOnUtc
 )
-: DomainEvent(OccurredOnUtc)
+    : DomainEvent(OccurredOnUtc)
 {
     public EntityAction Action => EntityAction.Create;
 }
-

@@ -32,7 +32,11 @@ namespace ValenceHub.Persistence.Write.Outbox.Models
         }
 
         public void MarkProcessed(DateTimeOffset now)
-            => ProcessedOnUtc = now;
+        {
+            ProcessedOnUtc = now;
+            Error = "Success"; 
+        }
+
 
         public void MarkFailed(string error)
             => Error = error;

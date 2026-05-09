@@ -1,12 +1,12 @@
 using System.Security.Cryptography;
 using Microsoft.Extensions.DependencyInjection;
-using ValenceHub.Application.Abstractions.Services;
+using ValenceHub.Application.Features.Auth.Abstractions;
 using ValenceHub.Infrastructure.Attributes;
 
 namespace ValenceHub.Infrastructure.Services;
 
 [AutoRegister(ServiceLifetime.Singleton)]
-public sealed class PasswordHashingService : IPasswordHashingService
+public sealed class PasswordHashingService : IPasswordHasher
 {
     private const int SaltSize = 16;
     private const int HashSize = 32;

@@ -9,7 +9,5 @@ public sealed record GetUserByIdQuery : IQuery<GetUserByIdResponse>
 
 public sealed record GetUserByIdResponse(
     Guid Id,
-    string FirstName,
-    string LastName,
     string Email,
     string PhoneNumber);

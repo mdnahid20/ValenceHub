@@ -30,13 +30,11 @@ public sealed class GetUserByIdQueryHandler : IQueryHandler<GetUserByIdQuery, Ge
         if (user is null)
         {
             return Result<GetUserByIdResponse>.Failure(
-                new Error("User.NotFound", $"User with ID {query.UserId} not found"));
+                Error.NotFound("User.NotFound", $"User with ID {query.UserId} not found"));
         }
 
         var response = new GetUserByIdResponse(
             Id: user.Id,
-            FirstName: string.Empty,
-            LastName: string.Empty,
             Email: user.Email ?? string.Empty,
             PhoneNumber: user.PhoneNumber ?? string.Empty);
 

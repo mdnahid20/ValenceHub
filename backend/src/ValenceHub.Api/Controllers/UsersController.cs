@@ -1,4 +1,3 @@
-using Microsoft.AspNetCore.Identity.Data;
 using Microsoft.AspNetCore.Mvc;
 using ValenceHub.Api.Contracts.Users;
 using ValenceHub.Api.Extensions;
@@ -27,35 +26,13 @@ public class UsersController : ControllerBase
     public async Task<IActionResult> CreateUser([FromBody] CreateUserRequest request, CancellationToken cancellationToken)
     {
         var result = await _commandDispatcher.Dispatch(request.ToCommand(), cancellationToken);
-        return result.ToJsonResponse();
-        }
-
-        return Ok(new { userId = result.Value });
+        return result.ToResponse(this);
     }
 
     [HttpGet("{userId}")]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> GetUser(
-        Guid userId,
-        CancellationToken cancellationToken)
+    public async Task<IActionResult> GetUser(Guid userId, CancellationToken cancellationToken)
     {
-        var query = new GetUserByIdQuery { UserId = userId };
-
-        var result = await _queryDispatcher.DispatchAsync(query, cancellationToken);
-
-        if (result.IsFailure)
-        {
-            return NotFound(new { error = result.Error?.Message });
-        }
-
-        return Ok(result);
+        var result = await _queryDispatcher.DispatchAsync(new GetUserByIdQuery { UserId = userId }, cancellationToken);
+        return result.ToApiResponse(this);
     }
 }
-
-public sealed record CreateUserRequest(
-    string FirstName,
-    string LastName,
-    string Email,
-    string PhoneNumber,
-    string Password);

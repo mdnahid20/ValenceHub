@@ -4,7 +4,6 @@ using System.Text.Json;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using ValenceHub.Application.Features.Auth.Abstractions;
-using ValenceHub.Domain.Users;
 using ValenceHub.Infrastructure.Attributes;
 using ValenceHub.Infrastructure.Options;
 
@@ -33,7 +32,7 @@ public sealed class JwtProvider : IJwtProvider
     public DateTimeOffset GetAccessTokenExpiresAt(DateTimeOffset utcNow)
         => utcNow.AddMinutes(_options.AccessTokenLifetimeMinutes <= 0 ? 15 : _options.AccessTokenLifetimeMinutes);
 
-    public string GenerateAccessToken(User user, DateTimeOffset issuedAtUtc, DateTimeOffset expiresAtUtc)
+    public string GenerateAccessToken(Guid userId, DateTimeOffset issuedAtUtc, DateTimeOffset expiresAtUtc)
     {
         var header = Base64UrlEncode(
             JsonSerializer.SerializeToUtf8Bytes(
@@ -46,22 +45,12 @@ public sealed class JwtProvider : IJwtProvider
 
         var payload = new Dictionary<string, object>
         {
-            ["sub"] = user.Id.Value.ToString(),
+            ["sub"] = userId.ToString(),
             ["iss"] = _options.Issuer,
             ["aud"] = _options.Audience,
             ["iat"] = issuedAtUtc.ToUnixTimeSeconds(),
             ["exp"] = expiresAtUtc.ToUnixTimeSeconds()
         };
-
-        if (user.Email is not null)
-        {
-            payload["email"] = user.Email.Value;
-        }
-
-        if (user.PhoneNumber is not null)
-        {
-            payload["phone_number"] = user.PhoneNumber.Value;
-        }
 
         var payloadSegment = Base64UrlEncode(JsonSerializer.SerializeToUtf8Bytes(payload, SerializerOptions));
         var signingInput = $"{header}.{payloadSegment}";

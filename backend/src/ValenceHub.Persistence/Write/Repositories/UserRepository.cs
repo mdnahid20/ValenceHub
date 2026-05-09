@@ -42,6 +42,22 @@ public class UserRepository : IRepository<User>, IUserRepository
 
     public void Remove(User entity) => _db.Users.Remove(entity);
 
+    public async Task<UserLoginCredentials?> GetCredentialsByEmailAsync(Email email, CancellationToken cancellationToken = default)
+        => await _db.Users
+            .AsNoTracking()
+            .Where(u => u.Email == email)
+            .Select(u => new UserLoginCredentials(u.Id.Value, u.PasswordHash))
+            .SingleOrDefaultAsync(cancellationToken);
+
+    public async Task<UserLoginCredentials?> GetCredentialsByPhoneNumberAsync(
+        PhoneNumber phoneNumber,
+        CancellationToken cancellationToken = default)
+        => await _db.Users
+            .AsNoTracking()
+            .Where(u => u.PhoneNumber == phoneNumber)
+            .Select(u => new UserLoginCredentials(u.Id.Value, u.PasswordHash))
+            .SingleOrDefaultAsync(cancellationToken);
+
     public async Task<User?> GetByEmailAsync(Email email, CancellationToken cancellationToken = default)
         => await _db.Users.SingleOrDefaultAsync(u => u.Email == email, cancellationToken);
 

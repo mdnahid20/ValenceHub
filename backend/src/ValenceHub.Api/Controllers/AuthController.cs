@@ -18,11 +18,17 @@ public sealed class AuthController : ControllerBase
     }
 
     [HttpPost("login")]
+    [AllowAnonymous]
     public async Task<IActionResult> Login(
         [FromBody] LoginRequest request,
         CancellationToken cancellationToken)
     {
-        var command = request.ToCommand();
+        var result = await _commandDispatcher.Dispatch(
+            request.ToCommand(),
+            cancellationToken);
+
+        return result.ToApiResponse(this);
+    }
 
     [HttpPost("register")]
     [AllowAnonymous]

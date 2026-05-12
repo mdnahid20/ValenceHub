@@ -5,7 +5,6 @@ using ValenceHub.Application.Abstractions.Results;
 using ValenceHub.Application.Abstractions.Services;
 using ValenceHub.Application.Features.Auth.Abstractions;
 using ValenceHub.Domain.Common.ValueObjects;
-using ValenceHub.Domain.Users;
 
 namespace ValenceHub.Application.Features.Auth.Commands.Login;
 
@@ -34,9 +33,10 @@ public sealed class LoginCommandHandler : ICommandHandler<LoginCommand, LoginRes
     public async Task<Result<LoginResponse>> Handle(LoginCommand request, CancellationToken cancellationToken)
     {
         var loginId = request.LoginId.Trim();
-        var user = await ResolveUserAsync(loginId, cancellationToken);
+        var credentials = await ResolveCredentialsAsync(loginId, cancellationToken);
 
-        if (user is null || !_passwordHasher.VerifyPassword(request.Password, user.PasswordHash))
+        if (credentials is null
+            || !_passwordHasher.VerifyPassword(request.Password, credentials.PasswordHash))
         {
             return Result<LoginResponse>.Failure(
                 Error.Unauthorized("Auth.InvalidCredentials", "Invalid login credentials."));
@@ -45,30 +45,27 @@ public sealed class LoginCommandHandler : ICommandHandler<LoginCommand, LoginRes
         var issuedAtUtc = _clock.UtcNow;
         var accessTokenExpiresAtUtc = _jwtProvider.GetAccessTokenExpiresAt(issuedAtUtc);
         var refreshToken = await _refreshTokenService.IssueAsync(
-            user.Id.Value,
+            credentials.UserId,
             issuedAtUtc,
             cancellationToken);
 
         var response = new LoginResponse(
-            UserId: user.Id.Value,
-            AccessToken: _jwtProvider.GenerateAccessToken(user, issuedAtUtc, accessTokenExpiresAtUtc),
+            AccessToken: _jwtProvider.GenerateAccessToken(credentials.UserId, issuedAtUtc, accessTokenExpiresAtUtc),
             RefreshToken: refreshToken.Token,
             AccessTokenExpiresAtUtc: accessTokenExpiresAtUtc,
-            RefreshTokenExpiresAtUtc: refreshToken.ExpiresAtUtc,
-            Email: user.Email?.Value,
-            PhoneNumber: user.PhoneNumber?.Value);
+            RefreshTokenExpiresAtUtc: refreshToken.ExpiresAtUtc);
 
         return Result<LoginResponse>.Success(response);
     }
 
-    private async Task<User?> ResolveUserAsync(
-    string loginId,
-    CancellationToken cancellationToken)
+    private async Task<UserLoginCredentials?> ResolveCredentialsAsync(
+        string loginId,
+        CancellationToken cancellationToken)
     {
         var emailResult = Email.Create(loginId);
         if (emailResult.IsSuccess)
         {
-            return await _userRepository.GetByEmailAsync(
+            return await _userRepository.GetCredentialsByEmailAsync(
                 emailResult.Value,
                 cancellationToken);
         }
@@ -76,7 +73,7 @@ public sealed class LoginCommandHandler : ICommandHandler<LoginCommand, LoginRes
         var phoneResult = PhoneNumber.Create(loginId);
         if (phoneResult.IsSuccess)
         {
-            return await _userRepository.GetByPhoneNumberAsync(
+            return await _userRepository.GetCredentialsByPhoneNumberAsync(
                 phoneResult.Value,
                 cancellationToken);
         }

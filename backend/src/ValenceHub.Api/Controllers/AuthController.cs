@@ -55,6 +55,19 @@ public sealed class AuthController : ControllerBase
 
         return result.ToApiResponse(this);
     }
+
+    [HttpPost("logout")]
+    [AllowAnonymous]
+    public async Task<IActionResult> Logout(
+        [FromBody] LogoutRequest request,
+        CancellationToken cancellationToken)
+    {
+        var result = await _commandDispatcher.Dispatch<Unit>(
+            request.ToCommand(),
+            cancellationToken);
+
+        return result.ToApiResponse(this);
+    }
             cancellationToken);
 
         return result.ToApiResponse(this);

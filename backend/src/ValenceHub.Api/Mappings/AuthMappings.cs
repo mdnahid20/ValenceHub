@@ -1,5 +1,6 @@
 using ValenceHub.Api.Contracts.Auth;
 using ValenceHub.Application.Features.Auth.Commands.Login;
+using ValenceHub.Application.Features.Auth.Commands.Logout;
 
 namespace ValenceHub.Api.Mappings;
 
@@ -21,5 +22,8 @@ public static class AuthMappings
         };
 
     public static RefreshTokenCommand ToCommand(this RefreshTokenRequest request)
+        => new() { RefreshToken = request.RefreshToken };
+
+    public static LogoutCommand ToCommand(this LogoutRequest request)
         => new() { RefreshToken = request.RefreshToken };
 }

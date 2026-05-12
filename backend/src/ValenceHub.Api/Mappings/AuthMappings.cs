@@ -11,6 +11,15 @@ public static class AuthMappings
             LoginId = request.LoginId,
             Password = request.Password
         };
+
+    public static CreateUserCommand ToCommand(this RegisterRequest request)
+        => new()
+        {
+            Email = request.Email,
+            PhoneNumber = request.PhoneNumber,
+            Password = request.Password
+        };
+
     public static RefreshTokenCommand ToCommand(this RefreshTokenRequest request)
         => new() { RefreshToken = request.RefreshToken };
 }

@@ -24,8 +24,19 @@ public sealed class AuthController : ControllerBase
     {
         var command = request.ToCommand();
 
+    [HttpPost("register")]
+    [AllowAnonymous]
+    public async Task<IActionResult> Register(
+        [FromBody] RegisterRequest request,
+        CancellationToken cancellationToken)
+    {
         var result = await _commandDispatcher.Dispatch(
-            command,
+            request.ToCommand(),
+            cancellationToken);
+
+        return result.ToResponse(this);
+    }
+
     [HttpPost("refresh")]
     [AllowAnonymous]
     public async Task<IActionResult> Refresh(

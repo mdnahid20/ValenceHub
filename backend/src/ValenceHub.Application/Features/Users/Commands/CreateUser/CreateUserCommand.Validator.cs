@@ -1,5 +1,6 @@
 using FluentValidation;
-using ValenceHub.Application.Features.Users.Commands.CreateUser;
+
+namespace ValenceHub.Application.Features.Users.Commands.CreateUser;
 
 public sealed class CreateUserCommandValidator : AbstractValidator<CreateUserCommand>
 {

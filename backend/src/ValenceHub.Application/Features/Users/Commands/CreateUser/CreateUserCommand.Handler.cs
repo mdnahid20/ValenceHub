@@ -4,6 +4,7 @@ using ValenceHub.Application.Abstractions.Repositories;
 using ValenceHub.Application.Abstractions.Results;
 using ValenceHub.Application.Abstractions.Services;
 using ValenceHub.Application.Abstractions.Transactions;
+using ValenceHub.Application.Features.Auth.Abstractions;
 using ValenceHub.Domain.Common.ValueObjects;
 using ValenceHub.Domain.Users;
 
@@ -12,12 +13,12 @@ namespace ValenceHub.Application.Features.Users.Commands.CreateUser;
 public sealed class CreateUserCommandHandler : ICommandHandler<CreateUserCommand, Guid>
 {
     private readonly IUserRepository _userRepository;
-    private readonly IPasswordHashingService _passwordHasher;
+    private readonly IPasswordHasher _passwordHasher;
     private readonly IDateTimeOffsetProvider _clock;
     private readonly IUnitOfWork _unitOfWork;
     public CreateUserCommandHandler(
         IUserRepository userRepository,
-        IPasswordHashingService passwordHasher,
+        IPasswordHasher passwordHasher,
         IDateTimeOffsetProvider clock,
         IUnitOfWork unitOfWork)
     {

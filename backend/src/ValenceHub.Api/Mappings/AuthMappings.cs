@@ -11,4 +11,6 @@ public static class AuthMappings
             LoginId = request.LoginId,
             Password = request.Password
         };
+    public static RefreshTokenCommand ToCommand(this RefreshTokenRequest request)
+        => new() { RefreshToken = request.RefreshToken };
 }

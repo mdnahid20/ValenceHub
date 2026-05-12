@@ -26,6 +26,18 @@ public sealed class AuthController : ControllerBase
 
         var result = await _commandDispatcher.Dispatch(
             command,
+    [HttpPost("refresh")]
+    [AllowAnonymous]
+    public async Task<IActionResult> Refresh(
+        [FromBody] RefreshTokenRequest request,
+        CancellationToken cancellationToken)
+    {
+        var result = await _commandDispatcher.Dispatch(
+            request.ToCommand(),
+            cancellationToken);
+
+        return result.ToApiResponse(this);
+    }
             cancellationToken);
 
         return result.ToApiResponse(this);

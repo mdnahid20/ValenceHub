@@ -43,6 +43,11 @@ internal sealed class UserConfiguration : IEntityTypeConfiguration<User>
             .HasMaxLength(255)
             .IsRequired();
 
+        builder.Property(x => x.IsVerified)
+            .IsRequired();
+
+        builder.Property(x => x.VerifiedAt);
+
         builder.Property(x => x.CreatedAt)
             .IsRequired();
 

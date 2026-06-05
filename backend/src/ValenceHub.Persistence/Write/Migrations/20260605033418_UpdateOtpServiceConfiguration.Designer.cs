@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using ValenceHub.Persistence.Write.Contexts;
 
@@ -11,9 +12,11 @@ using ValenceHub.Persistence.Write.Contexts;
 namespace ValenceHub.Persistence.Write.Migrations
 {
     [DbContext(typeof(ValenceHubWriteDbContext))]
-    partial class ValenceHubWriteDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260605033418_UpdateOtpServiceConfiguration")]
+    partial class UpdateOtpServiceConfiguration
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -41,6 +44,9 @@ namespace ValenceHub.Persistence.Write.Migrations
                     b.Property<DateTimeOffset>("ExpiresAtUtc")
                         .HasColumnType("datetimeoffset");
 
+                    b.Property<string>("IpAddress")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<DateTimeOffset>("LastSentAtUtc")
                         .HasColumnType("datetimeoffset");
 
@@ -60,6 +66,9 @@ namespace ValenceHub.Persistence.Write.Migrations
 
                     b.Property<DateTimeOffset?>("UsedAtUtc")
                         .HasColumnType("datetimeoffset");
+
+                    b.Property<string>("UserAgent")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<Guid?>("UserId")
                         .HasColumnType("uniqueidentifier");

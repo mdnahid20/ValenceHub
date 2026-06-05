@@ -1,5 +1,6 @@
 using System;
 using Microsoft.EntityFrameworkCore;
+using ValenceHub.Domain.Otps;
 using ValenceHub.Domain.Users;
 using ValenceHub.Persistence.Write.Outbox.Models;
 using ValenceHub.Persistence.Write.Models.Auth;
@@ -16,6 +17,7 @@ public class ValenceHubWriteDbContext : DbContext
     }
 
     public DbSet<OutboxMessage> OutboxMessages => Set<OutboxMessage>();
+    public DbSet<OtpCode> OtpCodes => Set<OtpCode>();
     public DbSet<PersistedRefreshToken> RefreshTokens => Set<PersistedRefreshToken>();
     public DbSet<User> Users => Set<User>();
 

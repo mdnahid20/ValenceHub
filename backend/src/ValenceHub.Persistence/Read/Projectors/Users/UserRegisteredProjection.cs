@@ -9,6 +9,7 @@ namespace ValenceHub.Persistence.Read.Projectors.Users;
 public sealed class UserRegisteredProjection :
     INotificationHandler<DomainEventNotification<UserCreatedDomainEvent>>,
     INotificationHandler<DomainEventNotification<UserContactUpdatedDomainEvent>>,
+    INotificationHandler<DomainEventNotification<UserVerifiedDomainEvent>>,
     INotificationHandler<DomainEventNotification<UserDeletedDomainEvent>>
 {
     private readonly ReadDbContext _context;
@@ -37,6 +38,7 @@ public sealed class UserRegisteredProjection :
             user.EventId = e.EventId;
             user.Email = e.Email;
             user.PhoneNumber = e.PhoneNumber;
+            user.IsVerified = false;
 
             _context.Users.Update(user);
             await _context.SaveChangesAsync(cancellationToken);
@@ -48,7 +50,8 @@ public sealed class UserRegisteredProjection :
             Id = e.Id,
             EventId = e.EventId,
             Email = e.Email,
-            PhoneNumber = e.PhoneNumber
+            PhoneNumber = e.PhoneNumber,
+            IsVerified = false
         };
 
         _context.Users.Add(user);
@@ -77,6 +80,26 @@ public sealed class UserRegisteredProjection :
         user.EventId = e.EventId;
         user.Email = e.Email;
         user.PhoneNumber = e.PhoneNumber;
+
+        _context.Users.Update(user);
+        await _context.SaveChangesAsync(cancellationToken);
+    }
+
+    public async Task Handle(
+        DomainEventNotification<UserVerifiedDomainEvent> notification,
+        CancellationToken cancellationToken)
+    {
+        var e = notification.DomainEvent;
+
+        var user = await _context.Users
+            .FirstOrDefaultAsync(x => x.Id == e.Id, cancellationToken);
+
+        if (user is null)
+        {
+            return;
+        }
+
+        user.IsVerified = true;
 
         _context.Users.Update(user);
         await _context.SaveChangesAsync(cancellationToken);

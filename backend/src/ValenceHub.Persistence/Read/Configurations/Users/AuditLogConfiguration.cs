@@ -19,6 +19,10 @@ public sealed class AuditLogConfiguration : IEntityTypeConfiguration<AuditLog>
         builder.Property(x => x.EntityName)
             .HasMaxLength(200);
 
+        builder.Property(x => x.Action)
+            .HasConversion<short>()
+            .IsRequired();
+
         var comparer = new ValueComparer<Dictionary<string, object?>?>(
             (left, right) => Serialize(left) == Serialize(right),
             value => Serialize(value).GetHashCode(),

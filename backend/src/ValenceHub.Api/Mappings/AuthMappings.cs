@@ -26,4 +26,11 @@ public static class AuthMappings
 
     public static LogoutCommand ToCommand(this LogoutRequest request)
         => new() { RefreshToken = request.RefreshToken };
+    public static SendOtpCommand ToCommand(this SendOtpRequest request)
+        => new()
+        {
+            Target = request.Target,
+            Purpose = request.Purpose,
+            Password = request.Password
+        };
 }

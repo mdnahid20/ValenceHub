@@ -62,6 +62,19 @@ public sealed class AuthController : ControllerBase
         [FromBody] LogoutRequest request,
         CancellationToken cancellationToken)
     {
+
+    [HttpPost("send-otp")]
+    [AllowAnonymous]
+    public async Task<IActionResult> SendOtp(
+        [FromBody] SendOtpRequest request,
+        CancellationToken cancellationToken)
+    {
+        var result = await _commandDispatcher.Dispatch(
+            request.ToCommand(),
+            cancellationToken);
+
+        return result.ToApiResponse(this);
+    }
         var result = await _commandDispatcher.Dispatch<Unit>(
             request.ToCommand(),
             cancellationToken);

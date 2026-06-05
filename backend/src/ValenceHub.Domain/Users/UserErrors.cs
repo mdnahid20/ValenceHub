@@ -22,6 +22,11 @@ public static class UserErrors
             "User.Deleted.ModificationNotAllowed",
             "Cannot modify a deleted user.");
 
+    public static readonly Error AlreadyVerified =
+        Error.Validation(
+            "User.Verified.AlreadyVerified",
+            "User is already verified.");
+
     public static readonly Error EmailAlreadyExists =
         Error.Validation("User.EmailExists", "Email already exists");
 

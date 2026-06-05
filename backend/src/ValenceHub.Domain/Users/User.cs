@@ -17,12 +17,16 @@ public sealed class User : AggregateRoot<UserId,Guid>, IAuditable, ISoftDelete
         string passwordHash,
         UserId? createdBy,   
         DateTimeOffset createdAt,
+        bool isVerified,
+        DateTimeOffset? verifiedAt,
         bool isDeleted)
         : base(id)
     {
         Email = email;
         PhoneNumber = phoneNumber;
         PasswordHash = passwordHash;
+        IsVerified = isVerified;
+        VerifiedAt = verifiedAt;
 
         CreatedBy = createdBy;  
         CreatedAt = createdAt;
@@ -33,6 +37,8 @@ public sealed class User : AggregateRoot<UserId,Guid>, IAuditable, ISoftDelete
     public Email? Email { get; private set; }
     public PhoneNumber? PhoneNumber { get; private set; }
     public string PasswordHash { get; private set; }
+    public bool IsVerified { get; private set; }
+    public DateTimeOffset? VerifiedAt { get; private set; }
 
     public DateTimeOffset CreatedAt { get; private set; }
     public DateTimeOffset? UpdatedAt { get; private set; }
@@ -68,6 +74,8 @@ public sealed class User : AggregateRoot<UserId,Guid>, IAuditable, ISoftDelete
             passwordHash: passwordHash,
             createdBy: createdBy,
             createdAt: now,
+            isVerified: false,
+            verifiedAt: null,
             isDeleted: false);
 
         user.RaiseDomainEvent(
@@ -129,6 +137,24 @@ public sealed class User : AggregateRoot<UserId,Guid>, IAuditable, ISoftDelete
         RaiseDomainEvent(new UserPasswordChangedDomainEvent(Id, now));
         return null;
     }
+
+    public Error? Verify(UserId verifiedBy, DateTimeOffset now)
+    {
+        if (IsDeleted)
+            return UserErrors.CannotModifyDeletedUser;
+
+        if (IsVerified)
+            return null;
+
+        IsVerified = true;
+        VerifiedAt = now;
+        UpdatedAt = now;
+        UpdatedBy = verifiedBy;
+
+        RaiseDomainEvent(new UserVerifiedDomainEvent(Id.Value, now));
+        return null;
+    }
+
     public Error? Delete(UserId deletedBy, DateTimeOffset now)
     {
         if (IsDeleted)
@@ -137,6 +163,8 @@ public sealed class User : AggregateRoot<UserId,Guid>, IAuditable, ISoftDelete
         IsDeleted = true;
         DeletedAt = now;
         DeletedBy = deletedBy;
+        UpdatedAt = now;
+        UpdatedBy = deletedBy;
 
         RaiseDomainEvent(new UserDeletedDomainEvent(Id, deletedBy, now));
 

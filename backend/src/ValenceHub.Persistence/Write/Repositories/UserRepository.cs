@@ -2,7 +2,10 @@ using System.Linq.Expressions;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using ValenceHub.Application.Abstractions.Repositories;
+using ValenceHub.Domain.Common.Enums;
 using ValenceHub.Domain.Common.ValueObjects;
+using ValenceHub.Domain.Otps;
+using ValenceHub.Domain.Otps.Enums;
 using ValenceHub.Domain.Users;
 using ValenceHub.Infrastructure.Attributes;
 using ValenceHub.Persistence.Write.Contexts;
@@ -46,7 +49,7 @@ public class UserRepository : IRepository<User>, IUserRepository
         => await _db.Users
             .AsNoTracking()
             .Where(u => u.Email == email)
-            .Select(u => new UserLoginCredentials(u.Id.Value, u.PasswordHash))
+            .Select(u => new UserLoginCredentials(u.Id.Value, u.PasswordHash, u.IsVerified))
             .SingleOrDefaultAsync(cancellationToken);
 
     public async Task<UserLoginCredentials?> GetCredentialsByPhoneNumberAsync(
@@ -55,14 +58,35 @@ public class UserRepository : IRepository<User>, IUserRepository
         => await _db.Users
             .AsNoTracking()
             .Where(u => u.PhoneNumber == phoneNumber)
-            .Select(u => new UserLoginCredentials(u.Id.Value, u.PasswordHash))
+            .Select(u => new UserLoginCredentials(u.Id.Value, u.PasswordHash, u.IsVerified))
             .SingleOrDefaultAsync(cancellationToken);
+
+    public Task<UserLoginCredentials?> GetCredentialsByTargetAsync(
+        CommunicationChannel target,
+        string targetValue,
+        CancellationToken cancellationToken = default)
+        => target switch
+        {
+            CommunicationChannel.Email => GetCredentialsByEmailAsync(Email.Restore(targetValue), cancellationToken),
+            CommunicationChannel.SMS => GetCredentialsByPhoneNumberAsync(PhoneNumber.Restore(targetValue), cancellationToken),
+            _ => Task.FromResult<UserLoginCredentials?>(null)
+        };
 
     public async Task<User?> GetByEmailAsync(Email email, CancellationToken cancellationToken = default)
         => await _db.Users.SingleOrDefaultAsync(u => u.Email == email, cancellationToken);
+    public async Task<Email?> GetEmailByUserIdAsync(Guid userId, CancellationToken cancellationToken = default)
+        => await _db.Users.Where(u => u.Id == userId).Select(u => u.Email).SingleOrDefaultAsync(cancellationToken);
 
     public async Task<User?> GetByPhoneNumberAsync(PhoneNumber phoneNumber, CancellationToken cancellationToken = default)
         => await _db.Users.SingleOrDefaultAsync(u => u.PhoneNumber == phoneNumber, cancellationToken);
+
+    public Task<User?> GetByTargetAsync(CommunicationChannel target, string targetValue, CancellationToken cancellationToken = default)
+        => target switch
+        {//TODO : Does need Validation in service Layer before calling this method?
+            CommunicationChannel.Email => GetByEmailAsync(Email.Restore(targetValue), cancellationToken),
+            CommunicationChannel.SMS => GetByPhoneNumberAsync(PhoneNumber.Restore(targetValue), cancellationToken),
+            _ => Task.FromResult<User?>(null)
+        };
 
     public async Task<bool> ExistsAsync(Guid id, CancellationToken cancellationToken = default)
         => await _db.Users.AnyAsync(u => u.Id == id, cancellationToken);

@@ -1,5 +1,8 @@
 using System.Threading;
+using ValenceHub.Domain.Common.Enums;
 using ValenceHub.Domain.Common.ValueObjects;
+using ValenceHub.Domain.Otps;
+using ValenceHub.Domain.Otps.Enums;
 using ValenceHub.Domain.Users;
 
 namespace ValenceHub.Application.Abstractions.Repositories;
@@ -13,9 +16,11 @@ public interface IUserRepository : IRepository<User>
     Task<UserLoginCredentials?> GetCredentialsByPhoneNumberAsync(
         PhoneNumber phoneNumber,
         CancellationToken cancellationToken = default);
-
+    Task<UserLoginCredentials?> GetCredentialsByTargetAsync(CommunicationChannel target, string targetValue,CancellationToken cancellationToken = default);
     Task<User?> GetByEmailAsync(Email email, CancellationToken cancellationToken = default);
+    Task<Email?> GetEmailByUserIdAsync(Guid id, CancellationToken cancellationToken = default);
     Task<User?> GetByPhoneNumberAsync(PhoneNumber phoneNumber, CancellationToken cancellationToken = default);
+    Task<User?> GetByTargetAsync(CommunicationChannel target, string targetValue, CancellationToken cancellationToken = default);
     Task<bool> ExistsByEmailAsync(Email email, CancellationToken cancellationToken = default);
     Task<bool> ExistsByPhoneNumberAsync(PhoneNumber phoneNumber, CancellationToken cancellationToken = default);
 }

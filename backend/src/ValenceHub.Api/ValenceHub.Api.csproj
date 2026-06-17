@@ -7,21 +7,19 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Remove="Extensions\**" />
     <Compile Remove="Filters\**" />
     <Compile Remove="Middlewares\**" />
-    <Content Remove="Extensions\**" />
     <Content Remove="Filters\**" />
     <Content Remove="Middlewares\**" />
-    <EmbeddedResource Remove="Extensions\**" />
     <EmbeddedResource Remove="Filters\**" />
     <EmbeddedResource Remove="Middlewares\**" />
-    <None Remove="Extensions\**" />
     <None Remove="Filters\**" />
     <None Remove="Middlewares\**" />
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="MediatR" Version="14.0.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="10.0.0" />
     <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.2">
       <PrivateAssets>all</PrivateAssets>

@@ -5,19 +5,15 @@ using ValenceHub.Application.Abstractions.Results;
 using ValenceHub.Application.Abstractions.Services;
 using ValenceHub.Application.Features.Auth.Abstractions;
 using ValenceHub.Domain.Common.Enums;
-using ValenceHub.Domain.Otps;
 using ValenceHub.Domain.Otps.Enums;
 
 namespace ValenceHub.Application.Features.Auth.Commands.Otp;
 
 public sealed class SendOtpCommandHandler : ICommandHandler<SendOtpCommand, OtpDeliveryResponse>
 {
-    private static readonly TimeSpan ResendCooldown = TimeSpan.FromSeconds(30);
-
     private readonly IUserRepository _userRepository;
     private readonly IPasswordHasher _passwordHasher;
     private readonly IOtpService _otpService;
-    private readonly IDateTimeOffsetProvider _clock;
 
     public SendOtpCommandHandler(
         IUserRepository userRepository,
@@ -28,12 +24,12 @@ public sealed class SendOtpCommandHandler : ICommandHandler<SendOtpCommand, OtpD
         _userRepository = Guard.Against.Null(userRepository);
         _passwordHasher = Guard.Against.Null(passwordHasher);
         _otpService = Guard.Against.Null(otpService);
-        _clock = Guard.Against.Null(clock);
+        Guard.Against.Null(clock);
     }
 
     public async Task<Result<OtpDeliveryResponse>> Handle(SendOtpCommand request, CancellationToken cancellationToken)
     {
-        if (!OtpCommandSupport.TryResolveTarget(request.Target, out var targetType, out var targetValue, out var maskedTarget))
+        if (!OtpCommandSupport.TryResolveTarget(request.Target, out var targetType, out var targetValue, out _))
         {
             return Result<OtpDeliveryResponse>.Failure(
                 Error.Validation(
@@ -56,8 +52,6 @@ public sealed class SendOtpCommandHandler : ICommandHandler<SendOtpCommand, OtpD
                     "Otp.PhonePaused",
                     "Phone OTP is currently paused."));
         }
-
-        var response = BuildResponse(maskedTarget, purpose);
 
         if (purpose == OtpPurpose.Register)
         {
@@ -87,14 +81,19 @@ public sealed class SendOtpCommandHandler : ICommandHandler<SendOtpCommand, OtpD
 
             return sendResult.IsFailure
                 ? Result<OtpDeliveryResponse>.Failure(sendResult.Error)
-                : Result<OtpDeliveryResponse>.Success(response);
+                : Result<OtpDeliveryResponse>.Success(new OtpDeliveryResponse(true, registerUser.Id.Value));
         }
 
         if (purpose == OtpPurpose.Login)
         {
             var loginUser = await _userRepository.GetByTargetAsync(targetType, targetValue, cancellationToken);
             if (loginUser is null)
-                return Result<OtpDeliveryResponse>.Success(response);
+            {
+                return Result<OtpDeliveryResponse>.Failure(
+                    Error.Unauthorized(
+                        "Auth.InvalidCredentials",
+                        "Invalid login credentials."));
+            }
 
             if (!loginUser.IsVerified)
             {
@@ -122,12 +121,17 @@ public sealed class SendOtpCommandHandler : ICommandHandler<SendOtpCommand, OtpD
 
             return sendResult.IsFailure
                 ? Result<OtpDeliveryResponse>.Failure(sendResult.Error)
-                : Result<OtpDeliveryResponse>.Success(response);
+                : Result<OtpDeliveryResponse>.Success(new OtpDeliveryResponse(true, loginUser.Id.Value));
         }
 
         var resetUser = await _userRepository.GetByTargetAsync(targetType, targetValue, cancellationToken);
         if (resetUser is null || !resetUser.IsVerified)
-            return Result<OtpDeliveryResponse>.Success(response);
+        {
+            return Result<OtpDeliveryResponse>.Failure(
+                Error.NotFound(
+                    "Auth.User.NotFound",
+                    "User not found for password reset."));
+        }
 
         var resetResult = await _otpService.IssueAsync(
             resetUser.Id.Value,
@@ -138,17 +142,6 @@ public sealed class SendOtpCommandHandler : ICommandHandler<SendOtpCommand, OtpD
 
         return resetResult.IsFailure
             ? Result<OtpDeliveryResponse>.Failure(resetResult.Error)
-            : Result<OtpDeliveryResponse>.Success(response);
-    }
-
-    private OtpDeliveryResponse BuildResponse(string maskedTarget, OtpPurpose purpose)
-    {
-        var utcNow = _clock.UtcNow;
-
-        return new OtpDeliveryResponse(
-            OtpCommandSupport.ToPurposeValue(purpose),
-            maskedTarget,
-            utcNow.Add(OtpPurposeExpiry.GetDuration(purpose)),
-            utcNow.Add(ResendCooldown));
+            : Result<OtpDeliveryResponse>.Success(new OtpDeliveryResponse(true, resetUser.Id.Value));
     }
 }

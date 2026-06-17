@@ -28,6 +28,8 @@ public sealed record Error(
 
     public static Error Forbidden(string code, string message)
         => new(code, message, ErrorType.Forbidden);
+    public static Error NotSupported(string code, string message)
+    => new Error(code, message, ErrorType.NotSupported);
 
     public override string ToString() => string.IsNullOrEmpty(Code) ? Message : $"{Code}: {Message}";
 }
@@ -39,5 +41,6 @@ public enum ErrorType
     NotFound,
     Conflict,
     Unauthorized,
-    Forbidden
+    Forbidden,
+    NotSupported
 }

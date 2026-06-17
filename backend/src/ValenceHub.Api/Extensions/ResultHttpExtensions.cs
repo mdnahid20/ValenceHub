@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using MediatR;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.DependencyInjection;
 using ValenceHub.Api.Responses;
 using ValenceHub.Application.Abstractions.Results;
@@ -28,6 +29,24 @@ public static class ResultHttpExtensions
 
     public static IActionResult ToApiResponse(
         this Result result,
+        ControllerBase controller)
+    {
+        var now = controller.GetCurrentUtcNow();
+
+        if (result.IsSuccess)
+        {
+            return controller.Ok(
+                ApiResponse<object?>.Ok(
+                    null,
+                    controller.HttpContext.TraceIdentifier,
+                    now));
+        }
+
+        return controller.ToProblem(result.Error);
+    }
+
+    public static IActionResult ToApiResponse(
+        this Result<Unit> result,
         ControllerBase controller)
     {
         var now = controller.GetCurrentUtcNow();
@@ -109,6 +128,7 @@ public static class ResultHttpExtensions
             ErrorType.Conflict => StatusCodes.Status409Conflict,
             ErrorType.Unauthorized => StatusCodes.Status401Unauthorized,
             ErrorType.Forbidden => StatusCodes.Status403Forbidden,
+            ErrorType.NotSupported => StatusCodes.Status501NotImplemented,
             _ => StatusCodes.Status500InternalServerError
         };
 

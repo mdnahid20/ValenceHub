@@ -40,7 +40,9 @@ public sealed class AuthController : ControllerBase
             request.ToCommand(),
             cancellationToken);
 
-        return result.ToResponse(this);
+        return result
+            .Map(userId => new RegisterResponse(userId))
+            .ToApiResponse(this);
     }
 
     [HttpPost("refresh")]

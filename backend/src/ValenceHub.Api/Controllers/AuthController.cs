@@ -1,8 +1,11 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using ValenceHub.Api.Contracts.Auth;
 using ValenceHub.Api.Extensions;
 using ValenceHub.Api.Mappings;
+using ValenceHub.Application.Abstractions.Results;
 using ValenceHub.Application.Messaging;
+using MediatR;
 
 namespace ValenceHub.Api.Controllers;
 
@@ -64,6 +67,25 @@ public sealed class AuthController : ControllerBase
         [FromBody] LogoutRequest request,
         CancellationToken cancellationToken)
     {
+        var result = await _commandDispatcher.Dispatch<Unit>(
+            request.ToCommand(),
+            cancellationToken);
+
+        return result.ToApiResponse(this);
+    }
+
+    [HttpPost("forgot-password")]
+    [AllowAnonymous]
+    public async Task<IActionResult> ForgotPassword(
+        [FromBody] ForgotPasswordRequest request,
+        CancellationToken cancellationToken)
+    {
+        var result = await _commandDispatcher.Dispatch<Unit>(
+            request.ToCommand(),
+            cancellationToken);
+
+        return result.ToApiResponse(this);
+    }
 
     [HttpPost("send-otp")]
     [AllowAnonymous]
@@ -77,12 +99,54 @@ public sealed class AuthController : ControllerBase
 
         return result.ToApiResponse(this);
     }
+
+    [HttpPost("resend-otp")]
+    [AllowAnonymous]
+    public async Task<IActionResult> ResendOtp(
+        [FromBody] ResendOtpRequest request,
+        CancellationToken cancellationToken)
+    {
+        var result = await _commandDispatcher.Dispatch(
+            request.ToCommand(),
+            cancellationToken);
+
+        return result.ToApiResponse(this);
+    }
+
+    [HttpPost("verify-otp")]
+    [AllowAnonymous]
+    public async Task<IActionResult> VerifyOtp(
+        [FromBody] VerifyOtpRequest request,
+        CancellationToken cancellationToken)
+    {
+        var result = await _commandDispatcher.Dispatch(
+            request.ToCommand(),
+            cancellationToken);
+
+        return result.ToApiResponse(this);
+    }
+
+    [HttpPost("complete-registration")]
+    [AllowAnonymous]
+    public async Task<IActionResult> CompleteRegistration(
+        [FromBody] CompleteRegistrationRequest request,
+        CancellationToken cancellationToken)
+    {
         var result = await _commandDispatcher.Dispatch<Unit>(
             request.ToCommand(),
             cancellationToken);
 
         return result.ToApiResponse(this);
     }
+
+    [HttpPost("reset-password")]
+    [AllowAnonymous]
+    public async Task<IActionResult> ResetPassword(
+        [FromBody] ResetPasswordRequest request,
+        CancellationToken cancellationToken)
+    {
+        var result = await _commandDispatcher.Dispatch<Unit>(
+            request.ToCommand(),
             cancellationToken);
 
         return result.ToApiResponse(this);

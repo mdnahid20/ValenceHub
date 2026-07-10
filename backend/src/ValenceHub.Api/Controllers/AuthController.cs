@@ -139,16 +139,16 @@ public sealed class AuthController : ControllerBase
         return result.ToApiResponse(this);
     }
 
-    [HttpPost("reset-password")]
-    [AllowAnonymous]
-    public async Task<IActionResult> ResetPassword(
-        [FromBody] ResetPasswordRequest request,
-        CancellationToken cancellationToken)
-    {
-        var result = await _commandDispatcher.Dispatch<Unit>(
-            request.ToCommand(),
-            cancellationToken);
+    //[HttpPost("reset-password")]
+    //[AllowAnonymous]
+    //public async Task<IActionResult> ResetPassword(
+    //    [FromBody] ResetPasswordRequest request,
+    //    CancellationToken cancellationToken)
+    //{
+    //    var result = await _commandDispatcher.Dispatch<Unit>(
+    //        request.ToCommand(),
+    //        cancellationToken);
 
-        return result.ToApiResponse(this);
-    }
+    //    return result.ToApiResponse(this);
+    //}
 }

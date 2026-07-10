@@ -29,7 +29,7 @@ public sealed class SendOtpCommandHandler : ICommandHandler<SendOtpCommand, OtpD
 
     public async Task<Result<OtpDeliveryResponse>> Handle(SendOtpCommand request, CancellationToken cancellationToken)
     {
-        if (!OtpCommandSupport.TryResolveTarget(request.Target, out var targetType, out var targetValue, out _))
+        if (!OtpCommandSupport.TryResolveTarget(request.Target, out var resolvedChannel, out var targetValue, out _))
         {
             return Result<OtpDeliveryResponse>.Failure(
                 Error.Validation(
@@ -37,15 +37,15 @@ public sealed class SendOtpCommandHandler : ICommandHandler<SendOtpCommand, OtpD
                     "Target must be a valid email address or phone number."));
         }
 
-        if (!OtpCommandSupport.TryParsePublicPurpose(request.Purpose, out var purpose))
+        if (resolvedChannel != request.Channel)
         {
             return Result<OtpDeliveryResponse>.Failure(
                 Error.Validation(
-                    "Otp.InvalidPurpose",
-                    "Purpose must be Register, Login, or ResetPassword."));
+                    "Otp.InvalidChannel",
+                    "Channel does not match the provided target."));
         }
 
-        if (targetType != CommunicationChannel.Email)
+        if (request.Channel != CommunicationChannel.Email)
         {
             return Result<OtpDeliveryResponse>.Failure(
                 Error.NotSupported(
@@ -53,9 +53,11 @@ public sealed class SendOtpCommandHandler : ICommandHandler<SendOtpCommand, OtpD
                     "Phone OTP is currently paused."));
         }
 
+        var purpose = request.Purpose;
+
         if (purpose == OtpPurpose.Register)
         {
-            var registerUser = await _userRepository.GetByTargetAsync(targetType, targetValue, cancellationToken);
+            var registerUser = await _userRepository.GetByTargetAsync(request.Channel, targetValue, cancellationToken);
             if (registerUser is null)
             {
                 return Result<OtpDeliveryResponse>.Failure(
@@ -74,7 +76,7 @@ public sealed class SendOtpCommandHandler : ICommandHandler<SendOtpCommand, OtpD
 
             var sendResult = await _otpService.IssueAsync(
                 registerUser.Id.Value,
-                targetType,
+                request.Channel,
                 targetValue,
                 purpose,
                 cancellationToken);
@@ -83,10 +85,9 @@ public sealed class SendOtpCommandHandler : ICommandHandler<SendOtpCommand, OtpD
                 ? Result<OtpDeliveryResponse>.Failure(sendResult.Error)
                 : Result<OtpDeliveryResponse>.Success(new OtpDeliveryResponse(true, registerUser.Id.Value));
         }
-
-        if (purpose == OtpPurpose.Login)
+        else if (purpose == OtpPurpose.Login)
         {
-            var loginUser = await _userRepository.GetByTargetAsync(targetType, targetValue, cancellationToken);
+            var loginUser = await _userRepository.GetByTargetAsync(request.Channel, targetValue, cancellationToken);
             if (loginUser is null)
             {
                 return Result<OtpDeliveryResponse>.Failure(
@@ -103,18 +104,9 @@ public sealed class SendOtpCommandHandler : ICommandHandler<SendOtpCommand, OtpD
                         "Account verification is required before login."));
             }
 
-            if (!string.IsNullOrWhiteSpace(request.Password) &&
-                !_passwordHasher.VerifyPassword(request.Password, loginUser.PasswordHash))
-            {
-                return Result<OtpDeliveryResponse>.Failure(
-                    Error.Unauthorized(
-                        "Auth.InvalidCredentials",
-                        "Invalid login credentials."));
-            }
-
             var sendResult = await _otpService.IssueAsync(
                 loginUser.Id.Value,
-                targetType,
+                request.Channel,
                 targetValue,
                 purpose,
                 cancellationToken);
@@ -123,25 +115,34 @@ public sealed class SendOtpCommandHandler : ICommandHandler<SendOtpCommand, OtpD
                 ? Result<OtpDeliveryResponse>.Failure(sendResult.Error)
                 : Result<OtpDeliveryResponse>.Success(new OtpDeliveryResponse(true, loginUser.Id.Value));
         }
+        else if (purpose == OtpPurpose.ForgotPassword)
+        {
+            var resetUser = await _userRepository.GetByTargetAsync(request.Channel, targetValue, cancellationToken);
+            if (resetUser is null || !resetUser.IsVerified)
+            {
+                return Result<OtpDeliveryResponse>.Failure(
+                    Error.NotFound(
+                        "Auth.User.NotFound",
+                        "User not found for password reset."));
+            }
 
-        var resetUser = await _userRepository.GetByTargetAsync(targetType, targetValue, cancellationToken);
-        if (resetUser is null || !resetUser.IsVerified)
+            var resetResult = await _otpService.IssueAsync(
+                resetUser.Id.Value,
+                request.Channel,
+                targetValue,
+                purpose,
+                cancellationToken);
+
+            return resetResult.IsFailure
+                ? Result<OtpDeliveryResponse>.Failure(resetResult.Error)
+                : Result<OtpDeliveryResponse>.Success(new OtpDeliveryResponse(true, resetUser.Id.Value));
+        }
+        else
         {
             return Result<OtpDeliveryResponse>.Failure(
-                Error.NotFound(
-                    "Auth.User.NotFound",
-                    "User not found for password reset."));
+                Error.Validation(
+                    "Otp.UnsupportedPurpose",
+                    $"OTP purpose '{purpose}' is not currently supported."));
         }
-
-        var resetResult = await _otpService.IssueAsync(
-            resetUser.Id.Value,
-            targetType,
-            targetValue,
-            purpose,
-            cancellationToken);
-
-        return resetResult.IsFailure
-            ? Result<OtpDeliveryResponse>.Failure(resetResult.Error)
-            : Result<OtpDeliveryResponse>.Success(new OtpDeliveryResponse(true, resetUser.Id.Value));
     }
 }

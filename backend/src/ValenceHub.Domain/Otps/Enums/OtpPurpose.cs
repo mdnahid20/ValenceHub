@@ -9,7 +9,7 @@ public enum OtpPurpose
 
     Login = 2,  
 
-    ResetPassword = 3,
+    ForgotPassword = 3,
 
     Logout = 4,
 

@@ -15,7 +15,7 @@ public sealed class User : AggregateRoot<UserId,Guid>, IAuditable, ISoftDelete
         Email? email,
         PhoneNumber? phoneNumber,
         string passwordHash,
-        UserId? createdBy,   
+        Guid? createdBy,   
         DateTimeOffset createdAt,
         bool isVerified,
         DateTimeOffset? verifiedAt,
@@ -42,18 +42,18 @@ public sealed class User : AggregateRoot<UserId,Guid>, IAuditable, ISoftDelete
 
     public DateTimeOffset CreatedAt { get; private set; }
     public DateTimeOffset? UpdatedAt { get; private set; }
-    public UserId? CreatedBy { get; private set; }
-    public UserId? UpdatedBy { get; private set; }
+    public Guid? CreatedBy { get; private set; }
+    public Guid? UpdatedBy { get; private set; }
 
     public bool IsDeleted { get; private set; }
     public DateTimeOffset? DeletedAt { get; private set; }
-    public UserId? DeletedBy { get; private set; }
+    public Guid? DeletedBy { get; private set; }
 
     public static Error? Create(
         Email? email,
         PhoneNumber? phoneNumber,
         string passwordHash,
-        UserId createdBy,
+        Guid createdBy,
         DateTimeOffset now,
         out User? user)
     {
@@ -134,7 +134,6 @@ public sealed class User : AggregateRoot<UserId,Guid>, IAuditable, ISoftDelete
         UpdatedAt = now;
         UpdatedBy = updateBy;
 
-        RaiseDomainEvent(new UserPasswordChangedDomainEvent(Id, now));
         return null;
     }
 

@@ -15,7 +15,7 @@ public static class OtpPurposeVerificationTokenExpiry
             OtpPurpose.Login =>
                 TimeSpan.FromMinutes(10),
 
-            OtpPurpose.ResetPassword =>
+            OtpPurpose.ForgotPassword =>
                 TimeSpan.FromMinutes(10),
 
             OtpPurpose.Logout =>

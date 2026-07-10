@@ -5,7 +5,6 @@ using ValenceHub.Application.Features.Auth.Commands.Login;
 using ValenceHub.Application.Features.Auth.Commands.Logout;
 using ValenceHub.Application.Features.Auth.Commands.Otp;
 using ValenceHub.Application.Features.Auth.Commands.RefreshToken;
-using ValenceHub.Application.Features.Auth.Commands.ResetPassword;
 using ValenceHub.Application.Features.Users.Commands.CreateUser;
 using ValenceHub.Domain.Common.Enums;
 using ValenceHub.Domain.Otps.Enums;
@@ -35,16 +34,16 @@ public static class AuthMappings
     public static LogoutCommand ToCommand(this LogoutRequest request)
         => new() { RefreshToken = request.RefreshToken };
 
-    public static ForgotPasswordCommand ToCommand(this ForgotPasswordRequest request)
-        => new() { LoginId = request.LoginId };
 
     public static SendOtpCommand ToCommand(this SendOtpRequest request)
-        => new()
+    {
+        return new()
         {
             Target = request.Target,
-            Purpose = request.Purpose,
-            Password = request.Password
+            Channel = (CommunicationChannel)request.Channel,
+            Purpose = (OtpPurpose)request.Purpose
         };
+    }
 
     public static ResendOtpCommand ToCommand(this ResendOtpRequest request)
         => new()
@@ -70,7 +69,7 @@ public static class AuthMappings
             Token = request.Token
         };
 
-    public static ResetPasswordCommand ToCommand(this ResetPasswordRequest request)
+    public static ForgotPasswordCommand ToCommand(this ForgotPasswordRequest request)
         => new()
         {
             UserId = request.UserId,

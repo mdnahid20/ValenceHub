@@ -20,7 +20,7 @@ public sealed class ResendOtpCommandValidator : AbstractValidator<ResendOtpComma
         RuleFor(x => x.Purpose)
             .IsInEnum()
             .Must(OtpCommandSupport.IsSupportedPublicPurpose)
-            .WithMessage("Purpose must be Register, Login, or ResetPassword.");
+            .WithMessage("Purpose must be Register, Login, or ForgotPassword.");
 
         RuleFor(x => x)
             .Must(x => OtpCommandSupport.TryResolveTarget(x.TargetValue, out var resolvedChannel, out _) && resolvedChannel == x.Channel)

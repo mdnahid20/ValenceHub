@@ -29,7 +29,6 @@ public static class DependencyInjection
         services.AddScoped<IQueryDispatcher, QueryDispatcher>();
         services.AddScoped(typeof(ICommandBehavior<,>), typeof(ExceptionHandlingBehavior<,>));
         services.AddScoped(typeof(ICommandBehavior<,>), typeof(TransactionBehavior<,>));
-        services.AddScoped(typeof(ICommandBehavior<,>), typeof(DomainEventsBehavior<,>));
         services.AddScoped(typeof(ICommandBehavior<,>), typeof(ValidationBehavior<,>));
         services.AddScoped(typeof(ICommandBehavior<,>), typeof(LoggingBehavior<,>));
         services.AddScoped(typeof(ICommandBehavior<,>), typeof(PerformanceBehavior<,>));

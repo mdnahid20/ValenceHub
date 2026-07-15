@@ -24,7 +24,7 @@ public class UserRepository : IRepository<User>, IUserRepository
     public IQueryable<User> QueryIncludingDeleted() => _db.Users.IgnoreQueryFilters().AsQueryable();
 
     public async Task<User?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
-        => await _db.Users.FindAsync(new object[] { id }, cancellationToken) as User;
+        => await _db.Users.FindAsync(new object[] { UserId.FromGuid(id) }, cancellationToken) as User;
 
     public async Task<User?> GetByIdIncludingDeletedAsync(Guid id, CancellationToken cancellationToken = default)
         => await _db.Users.IgnoreQueryFilters().FirstOrDefaultAsync(u => u.Id == id, cancellationToken);

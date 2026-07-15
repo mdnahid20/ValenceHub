@@ -1,3 +1,5 @@
+using ValenceHub.Application.Abstractions.Results;
+
 namespace ValenceHub.Application.Features.Auth.Abstractions;
 
 public interface IRefreshTokenService
@@ -12,7 +14,7 @@ public interface IRefreshTokenService
         DateTimeOffset utcNow,
         CancellationToken cancellationToken = default);
 
-    Task RevokeAsync(
+    Task<Result> RevokeAsync(
         string refreshToken,
         DateTimeOffset revokedAtUtc,
         CancellationToken cancellationToken = default);

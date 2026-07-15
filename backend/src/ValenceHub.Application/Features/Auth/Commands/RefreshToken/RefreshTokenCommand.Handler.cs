@@ -47,10 +47,15 @@ public sealed class RefreshTokenCommandHandler : ICommandHandler<RefreshTokenCom
                 Error.Unauthorized("Auth.InvalidRefreshToken", "Refresh token is invalid or expired."));
         }
 
-        await _refreshTokenService.RevokeAsync(
+        var revokeResult = await _refreshTokenService.RevokeAsync(
             request.RefreshToken,
             now,
             cancellationToken);
+
+        if (revokeResult.IsFailure)
+        {
+            return Result<RefreshTokenResponse>.Failure(revokeResult.Error);
+        }
 
         var accessTokenExpiresAtUtc = _jwtProvider.GetAccessTokenExpiresAt(now);
         var refreshToken = await _refreshTokenService.IssueAsync(

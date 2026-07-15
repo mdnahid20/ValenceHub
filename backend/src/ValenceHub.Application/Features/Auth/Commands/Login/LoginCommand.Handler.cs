@@ -4,7 +4,8 @@ using ValenceHub.Application.Abstractions.Repositories;
 using ValenceHub.Application.Abstractions.Results;
 using ValenceHub.Application.Abstractions.Services;
 using ValenceHub.Application.Features.Auth.Abstractions;
-using ValenceHub.Domain.Common.ValueObjects;
+using ValenceHub.Application.Features.Auth.Commands.Otp;
+using ValenceHub.Domain.Common.Enums;
 
 namespace ValenceHub.Application.Features.Auth.Commands.Login;
 
@@ -33,7 +34,21 @@ public sealed class LoginCommandHandler : ICommandHandler<LoginCommand, LoginRes
     public async Task<Result<LoginResponse>> Handle(LoginCommand request, CancellationToken cancellationToken)
     {
         var loginId = request.LoginId.Trim();
-        var credentials = await ResolveCredentialsAsync(loginId, cancellationToken);
+        if (!OtpCommandSupport.TryResolveTarget(loginId, out var targetType, out var normalizedLoginId))
+        {
+            return Result<LoginResponse>.Failure(
+                Error.Unauthorized("Auth.InvalidCredentials", "Invalid login credentials."));
+        }
+
+        if (targetType != CommunicationChannel.Email)
+        {
+            return Result<LoginResponse>.Failure(
+                Error.NotSupported(
+                    "Auth.Login.PhonePaused",
+                    "Phone login is currently paused."));
+        }
+
+        var credentials = await _userRepository.GetCredentialsByTargetAsync(targetType, normalizedLoginId, cancellationToken);
 
         if (credentials is null
             || !_passwordHasher.VerifyPassword(request.Password, credentials.PasswordHash))
@@ -42,42 +57,28 @@ public sealed class LoginCommandHandler : ICommandHandler<LoginCommand, LoginRes
                 Error.Unauthorized("Auth.InvalidCredentials", "Invalid login credentials."));
         }
 
+        if (!credentials.IsVerified)
+        {
+            return Result<LoginResponse>.Failure(
+                Error.Forbidden(
+                    "Auth.User.NotVerified",
+                    "Account verification is required before login."));
+        }
+
         var issuedAtUtc = _clock.UtcNow;
         var accessTokenExpiresAtUtc = _jwtProvider.GetAccessTokenExpiresAt(issuedAtUtc);
+        var accessToken = _jwtProvider.GenerateAccessToken(credentials.UserId, issuedAtUtc, accessTokenExpiresAtUtc);   
         var refreshToken = await _refreshTokenService.IssueAsync(
             credentials.UserId,
             issuedAtUtc,
             cancellationToken);
 
         var response = new LoginResponse(
-            AccessToken: _jwtProvider.GenerateAccessToken(credentials.UserId, issuedAtUtc, accessTokenExpiresAtUtc),
+            AccessToken: accessToken,
             RefreshToken: refreshToken.Token,
             AccessTokenExpiresAtUtc: accessTokenExpiresAtUtc,
             RefreshTokenExpiresAtUtc: refreshToken.ExpiresAtUtc);
 
         return Result<LoginResponse>.Success(response);
-    }
-
-    private async Task<UserLoginCredentials?> ResolveCredentialsAsync(
-        string loginId,
-        CancellationToken cancellationToken)
-    {
-        var emailResult = Email.Create(loginId);
-        if (emailResult.IsSuccess)
-        {
-            return await _userRepository.GetCredentialsByEmailAsync(
-                emailResult.Value,
-                cancellationToken);
-        }
-
-        var phoneResult = PhoneNumber.Create(loginId);
-        if (phoneResult.IsSuccess)
-        {
-            return await _userRepository.GetCredentialsByPhoneNumberAsync(
-                phoneResult.Value,
-                cancellationToken);
-        }
-
-        return null;
     }
 }

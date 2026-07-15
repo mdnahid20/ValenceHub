@@ -1,5 +1,6 @@
 using System.Security.Cryptography;
 using Microsoft.EntityFrameworkCore;
+using ValenceHub.Application.Abstractions.Results;
 using ValenceHub.Application.Features.Auth.Abstractions;
 using ValenceHub.Persistence.Write.Contexts;
 using ValenceHub.Persistence.Write.Models.Auth;
@@ -55,13 +56,18 @@ public sealed class RefreshTokenService : IRefreshTokenService
         return session.UserId;
     }
 
-    public async Task RevokeAsync(
+    public async Task<Result> RevokeAsync(
         string refreshToken,
         DateTimeOffset revokedAtUtc,
         CancellationToken cancellationToken = default)
     {
         if (string.IsNullOrWhiteSpace(refreshToken))
-            return;
+        {
+            return Result.Failure(
+                Error.Validation(
+                    "Auth.RefreshToken.Required",
+                    "Refresh token is required."));
+        }
 
         var tokenHash = ComputeHash(refreshToken);
 
@@ -69,9 +75,32 @@ public sealed class RefreshTokenService : IRefreshTokenService
             .FirstOrDefaultAsync(x => x.TokenHash == tokenHash, cancellationToken);
 
         if (session is null)
-            return;
+        {
+            return Result.Failure(
+                Error.NotFound(
+                    "Auth.RefreshToken.NotFound",
+                    "Refresh token was not found."));
+        }
+
+        if (session.RevokedAtUtc is not null)
+        {
+            return Result.Failure(
+                Error.Conflict(
+                    "Auth.RefreshToken.AlreadyRevoked",
+                    "Refresh token has already been revoked."));
+        }
+
+        if (session.ExpiresAtUtc <= revokedAtUtc)
+        {
+            return Result.Failure(
+                Error.Unauthorized(
+                    "Auth.RefreshToken.Expired",
+                    "Refresh token is expired."));
+        }
 
         session.Revoke(revokedAtUtc);
+
+        return Result.Success();
     }
 
     private static string CreateToken()

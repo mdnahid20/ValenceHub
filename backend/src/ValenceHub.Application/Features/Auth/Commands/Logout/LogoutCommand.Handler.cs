@@ -21,10 +21,13 @@ public sealed class LogoutCommandHandler : ICommandHandler<LogoutCommand>
 
     public async Task<Result<Unit>> Handle(LogoutCommand request, CancellationToken cancellationToken)
     {
-        await _refreshTokenService.RevokeAsync(
+        var revokeResult = await _refreshTokenService.RevokeAsync(
             request.RefreshToken,
             _clock.UtcNow,
             cancellationToken);
+
+        if (revokeResult.IsFailure)
+            return Result<Unit>.Failure(revokeResult.Error);
 
         return Result<Unit>.Success(Unit.Value);
     }

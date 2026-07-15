@@ -53,3 +53,15 @@ Thumbs.db
 **/Logs/
 *.log
 *.txt
+
+# MCP / AI Agent Safety
+.cursor/
+.claude/
+.mcp/
+.ai/
+.cache/
+.md/
+
+
+# --- Garbage --- 
+.temp/

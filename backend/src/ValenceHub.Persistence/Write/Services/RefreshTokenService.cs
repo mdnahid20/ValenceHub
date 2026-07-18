@@ -103,6 +103,21 @@ public sealed class RefreshTokenService : IRefreshTokenService
         return Result.Success();
     }
 
+    public async Task RevokeAllByUserIdAsync(
+        Guid userId,
+        DateTimeOffset revokedAtUtc,
+        CancellationToken cancellationToken = default)
+    {
+        var sessions = await _context.RefreshTokens
+            .Where(x => x.UserId == userId && x.RevokedAtUtc == null)
+            .ToListAsync(cancellationToken);
+
+        foreach (var session in sessions)
+        {
+            session.Revoke(revokedAtUtc);
+        }
+    }
+
     private static string CreateToken()
         => Base64UrlEncode(RandomNumberGenerator.GetBytes(64));
 

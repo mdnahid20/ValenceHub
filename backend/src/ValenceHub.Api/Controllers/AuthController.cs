@@ -74,6 +74,19 @@ public sealed class AuthController : ControllerBase
         return result.ToApiResponse(this);
     }
 
+    [HttpPost("change-password")]
+    [Authorize]
+    public async Task<IActionResult> ChangePassword(
+        [FromBody] ChangePasswordRequest request,
+        CancellationToken cancellationToken)
+    {
+        var result = await _commandDispatcher.Dispatch<Unit>(
+            request.ToCommand(),
+            cancellationToken);
+
+        return result.ToApiResponse(this);
+    }
+
     [HttpPost("forgot-password")]
     [AllowAnonymous]
     public async Task<IActionResult> ForgotPassword(
@@ -138,17 +151,4 @@ public sealed class AuthController : ControllerBase
 
         return result.ToApiResponse(this);
     }
-
-    //[HttpPost("reset-password")]
-    //[AllowAnonymous]
-    //public async Task<IActionResult> ResetPassword(
-    //    [FromBody] ResetPasswordRequest request,
-    //    CancellationToken cancellationToken)
-    //{
-    //    var result = await _commandDispatcher.Dispatch<Unit>(
-    //        request.ToCommand(),
-    //        cancellationToken);
-
-    //    return result.ToApiResponse(this);
-    //}
 }

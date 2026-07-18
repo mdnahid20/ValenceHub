@@ -33,7 +33,17 @@ public static class DependencyInjection
 {
     public static IServiceCollection AddPersistence(this IServiceCollection services, IConfiguration configuration)
     {
-        services.Configure<JwtOptions>(configuration.GetSection(JwtOptions.SectionName));
+        var jwtSection = configuration.GetSection(JwtOptions.SectionName);
+        services.Configure<JwtOptions>(options =>
+        {
+            options.Issuer = jwtSection["Issuer"] ?? options.Issuer;
+            options.Audience = jwtSection["Audience"] ?? options.Audience;
+            options.SigningKey = jwtSection["SigningKey"] ?? options.SigningKey;
+            options.AccessTokenLifetimeMinutes = int.TryParse(jwtSection["AccessTokenLifetimeMinutes"], out var lifetime)
+                ? lifetime
+                : options.AccessTokenLifetimeMinutes;
+        });
+
         services.AddMemoryCache();
 
         services.AddScoped<AuditInterceptor>();

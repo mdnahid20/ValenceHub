@@ -18,6 +18,11 @@ public interface IRefreshTokenService
         string refreshToken,
         DateTimeOffset revokedAtUtc,
         CancellationToken cancellationToken = default);
+
+    Task RevokeAllByUserIdAsync(
+        Guid userId,
+        DateTimeOffset revokedAtUtc,
+        CancellationToken cancellationToken = default);
 }
 
 public sealed record RefreshTokenIssueResult(

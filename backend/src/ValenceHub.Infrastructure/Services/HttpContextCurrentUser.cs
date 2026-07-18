@@ -20,8 +20,9 @@ public sealed class HttpContextCurrentUser : ICurrentUser
     {
         get
         {
-            var value = _httpContextAccessor.HttpContext?.User.FindFirstValue(ClaimTypes.NameIdentifier)
-                ?? _httpContextAccessor.HttpContext?.User.FindFirstValue("sub");
+            var principal = _httpContextAccessor.HttpContext?.User;
+            var value = principal?.FindFirst(ClaimTypes.NameIdentifier)?.Value
+                ?? principal?.FindFirst("sub")?.Value;
 
             return Guid.TryParse(value, out var userId) ? userId : null;
         }

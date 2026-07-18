@@ -10,8 +10,21 @@ public static class DependencyInjection
         this IServiceCollection services,
         IConfiguration configuration)
     {
-        services.Configure<EmailOptions>(configuration.GetSection(EmailOptions.SectionName));
+        var emailSection = configuration.GetSection(EmailOptions.SectionName);
+
+        services.Configure<EmailOptions>(options =>
+        {
+            options.SmtpHost = emailSection["SmtpHost"] ?? string.Empty;
+            options.SmtpPort = int.TryParse(emailSection["SmtpPort"], out var smtpPort) ? smtpPort : 0;
+            options.SmtpUsername = emailSection["SmtpUsername"] ?? string.Empty;
+            options.SmtpPassword = emailSection["SmtpPassword"] ?? string.Empty;
+            options.SenderEmail = emailSection["SenderEmail"] ?? string.Empty;
+            options.SenderName = emailSection["SenderName"] ?? string.Empty;
+            options.EnableSsl = bool.TryParse(emailSection["EnableSsl"], out var enableSsl) ? enableSsl : true;
+            options.IsVirtualEmailEnabled = bool.TryParse(emailSection["IsVirtualEmailEnabled"], out var isVirtualEmailEnabled) && isVirtualEmailEnabled;
+        });
 
         return services;
     }
 }
+

@@ -1,4 +1,5 @@
 using ValenceHub.Api.Contracts.Auth;
+using ValenceHub.Application.Features.Auth.Commands.ChangePassword;
 using ValenceHub.Application.Features.Auth.Commands.CompleteRegistration;
 using ValenceHub.Application.Features.Auth.Commands.ForgotPassword;
 using ValenceHub.Application.Features.Auth.Commands.Login;
@@ -34,6 +35,12 @@ public static class AuthMappings
     public static LogoutCommand ToCommand(this LogoutRequest request)
         => new() { RefreshToken = request.RefreshToken };
 
+    public static ChangePasswordCommand ToCommand(this ChangePasswordRequest request)
+        => new()
+        {
+            CurrentPassword = request.CurrentPassword,
+            NewPassword = request.NewPassword
+        };
 
     public static SendOtpCommand ToCommand(this SendOtpRequest request)
     {

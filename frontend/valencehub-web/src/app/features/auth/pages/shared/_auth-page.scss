@@ -1,0 +1,42 @@
+.auth-page {
+  width: min(100%, 32rem);
+  padding: 2rem;
+  border: 1px solid #dbe4ff;
+  border-radius: 1.5rem;
+  background-color: #ffffff;
+  box-shadow: 0 30px 60px rgba(15, 23, 42, 0.08);
+}
+
+.auth-page__eyebrow {
+  margin: 0 0 0.75rem;
+  color: #2563eb;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.auth-page h2 {
+  margin: 0 0 1rem;
+  color: #0f172a;
+  font-size: 1.875rem;
+}
+
+.auth-page p {
+  margin: 0;
+  color: #475569;
+  line-height: 1.6;
+}
+
+.auth-page__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+
+.auth-page__actions a {
+  color: #2563eb;
+  font-weight: 600;
+  text-decoration: none;
+}

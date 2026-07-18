@@ -1,5 +1,6 @@
 # --- Environment ---
 .env
+.env.*
 
 # --- .NET / C# ---
 bin/
@@ -10,9 +11,15 @@ obj/
 .vs/
 .vscode/
 *.vspscc
-*.dll
-*.exe
-*.pdb
+
+# Ignore local configuration files
+appsettings.Development.json
+appsettings.Local.json
+appsettings.json
+
+# Ignore Secret Manager files (for .NET)
+secrets.json
+
 # Keep migrations if shared with team
 # Migrations/
 
@@ -38,3 +45,23 @@ Thumbs.db
 # --- Database / misc ---
 *.db
 *.localdb
+*.mdf
+*.ldf
+
+
+# --- Logs --- 
+**/Logs/
+*.log
+*.txt
+
+# MCP / AI Agent Safety
+.cursor/
+.claude/
+.mcp/
+.ai/
+.cache/
+.md/
+
+
+# --- Garbage --- 
+.temp/

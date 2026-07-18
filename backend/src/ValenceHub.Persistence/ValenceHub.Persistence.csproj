@@ -7,11 +7,20 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\ValenceHub.Application\ValenceHub.Application.csproj" />
-    <ProjectReference Include="..\ValenceHub.Domain\ValenceHub.Domain.csproj" />
+    <Compile Remove="Common\**" />
+    <EmbeddedResource Remove="Common\**" />
+    <None Remove="Common\**" />
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\ValenceHub.Application\ValenceHub.Application.csproj" />
+    <ProjectReference Include="..\ValenceHub.Domain\ValenceHub.Domain.csproj" />
+    <ProjectReference Include="..\ValenceHub.Infrastructure\ValenceHub.Infrastructure.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Ardalis.GuardClauses" Version="5.0.0" />
+    <PackageReference Include="Dapper" Version="2.1.66" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="10.0.2" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="10.0.2">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
@@ -22,6 +31,12 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
+    <PackageReference Include="Microsoft.Extensions.Hosting.Abstractions" Version="10.0.3" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Read\Idempotency\" />
+    <Folder Include="Write\Migrations\" />
   </ItemGroup>
 
 </Project>

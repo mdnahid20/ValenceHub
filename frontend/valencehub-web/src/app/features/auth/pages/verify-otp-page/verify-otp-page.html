@@ -1,9 +1,43 @@
 <section class="auth-page">
-  <p class="auth-page__eyebrow">Shared OTP placeholder</p>
+  <p class="auth-page__eyebrow">Auth</p>
   <h2>Verify OTP</h2>
   <p>
-    This shared route will support both registration completion and password reset verification.
+    Enter the 6-digit code sent to <strong>{{ pendingContext?.target ?? 'your target' }}</strong>.
   </p>
+
+  <form class="auth-page__form" [formGroup]="verifyOtpForm" (ngSubmit)="submit()">
+    <label class="auth-page__field">
+      <span>Verification code</span>
+      <input
+        type="text"
+        inputmode="numeric"
+        maxlength="6"
+        formControlName="code"
+        autocomplete="one-time-code"
+      />
+    </label>
+
+    @if (infoMessage) {
+      <p class="auth-page__message auth-page__message--info">{{ infoMessage }}</p>
+    }
+
+    @if (errorMessage) {
+      <p class="auth-page__message auth-page__message--error">{{ errorMessage }}</p>
+    }
+
+    <button class="auth-page__button" type="submit" [disabled]="isSubmitting">
+      {{ isSubmitting ? 'Verifying...' : 'Verify OTP' }}
+    </button>
+
+    <button
+      class="auth-page__button auth-page__button--secondary"
+      type="button"
+      (click)="resendCode()"
+      [disabled]="isResending || isSubmitting"
+    >
+      {{ isResending ? 'Resending...' : 'Resend code' }}
+    </button>
+  </form>
 
   <div class="auth-page__actions">
     <a routerLink="/auth/register">Back to registration</a>

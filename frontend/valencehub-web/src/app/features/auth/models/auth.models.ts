@@ -12,7 +12,7 @@ export enum OtpPurpose {
 }
 
 export interface RegisterRequest {
-  email: string;
+  email?: string | null;
   phoneNumber?: string | null;
   password: string;
 }

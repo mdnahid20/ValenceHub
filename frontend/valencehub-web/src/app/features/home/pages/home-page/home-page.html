@@ -1,17 +1,28 @@
 <main class="home-page">
   <section class="home-page__hero">
     <p class="home-page__eyebrow">ValenceHub</p>
-    <h1>Frontend authentication foundation is ready.</h1>
+    <h1>Authentication is wired to the live API contracts.</h1>
     <p>
-      Auth routing, layout, services, and page shells are now wired so the next tickets can focus
-      on forms and API behavior.
+      Register, login, OTP verification, and password reset now submit contract-aligned payloads to
+      backend auth endpoints.
     </p>
 
     <div class="home-page__actions">
-      <a class="home-page__button home-page__button--primary" routerLink="/auth/register">
-        Register
-      </a>
-      <a class="home-page__button" routerLink="/auth/login">Login</a>
+      @if (!isAuthenticated) {
+        <a class="home-page__button home-page__button--primary" routerLink="/auth/register">
+          Register
+        </a>
+        <a class="home-page__button" routerLink="/auth/login">Login</a>
+      } @else {
+        <button
+          class="home-page__button home-page__button--primary"
+          type="button"
+          (click)="logout()"
+          [disabled]="isSubmitting"
+        >
+          {{ isSubmitting ? 'Signing out...' : 'Logout' }}
+        </button>
+      }
     </div>
   </section>
 </main>

@@ -1,0 +1,60 @@
+using Dapper;
+using Microsoft.Extensions.DependencyInjection;
+using ValenceHub.Infrastructure.Attributes;
+using ValenceHub.Persistence.Read.Connection;
+using ValenceHub.Persistence.Read.Models.Integration;
+
+namespace ValenceHub.Persistence.Read.Idempotency;
+
+[AutoRegister(ServiceLifetime.Scoped)]
+public sealed class ProcessedEventStore : IProcessedEventStore
+{
+    private readonly IDbConnectionFactory _connectionFactory;
+
+    public ProcessedEventStore(IDbConnectionFactory connectionFactory)
+    {
+        _connectionFactory = connectionFactory;
+    }
+
+    public async Task<bool> HasProcessedAsync(Guid eventId, CancellationToken cancellationToken = default)
+    {
+        const string sql = """
+            SELECT 1
+            FROM ProcessedEvents WITH (NOLOCK)
+            WHERE EventId = @EventId
+            """;
+
+        using var connection = await _connectionFactory.CreateConnectionAsync(cancellationToken);
+
+        var result = await connection.QueryFirstOrDefaultAsync<int?>(
+            new CommandDefinition(
+                sql,
+                new { EventId = eventId },
+                cancellationToken: cancellationToken));
+
+        return result.HasValue;
+    }
+
+    public async Task MarkProcessedAsync(
+        Guid eventId,
+        string eventType,
+        DateTimeOffset processedOnUtc,
+        CancellationToken cancellationToken = default)
+    {
+        const string sql = """
+            INSERT INTO ProcessedEvents (Id, EventId, EventType, ProcessedOnUtc)
+            VALUES (@Id, @EventId, @EventType, @ProcessedOnUtc)
+            """;
+
+        using var connection = await _connectionFactory.CreateConnectionAsync(cancellationToken);
+
+        var record = new ProcessedEventRecord(eventId,eventType,processedOnUtc);
+
+        await connection.ExecuteAsync(
+            new CommandDefinition(
+                sql,
+                record,
+                cancellationToken: cancellationToken));
+    }
+}
+

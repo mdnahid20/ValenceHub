@@ -1,0 +1,33 @@
+using System.Security.Claims;
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.DependencyInjection;
+using ValenceHub.Application.Features.Auth.Abstractions;
+using ValenceHub.Infrastructure.Attributes;
+
+namespace ValenceHub.Infrastructure.Services;
+
+[AutoRegister(ServiceLifetime.Scoped)]
+public sealed class HttpContextCurrentUser : ICurrentUser
+{
+    private readonly IHttpContextAccessor _httpContextAccessor;
+
+    public HttpContextCurrentUser(IHttpContextAccessor httpContextAccessor)
+    {
+        _httpContextAccessor = httpContextAccessor;
+    }
+
+    public Guid? UserId
+    {
+        get
+        {
+            var principal = _httpContextAccessor.HttpContext?.User;
+            var value = principal?.FindFirst(ClaimTypes.NameIdentifier)?.Value
+                ?? principal?.FindFirst("sub")?.Value;
+
+            return Guid.TryParse(value, out var userId) ? userId : null;
+        }
+    }
+
+    public bool IsAuthenticated
+        => _httpContextAccessor.HttpContext?.User?.Identity?.IsAuthenticated == true;
+}

@@ -1,0 +1,30 @@
+<section class="auth-layout">
+  <div class="auth-layout__panel">
+    <a class="auth-layout__brand" routerLink="/">ValenceHub</a>
+
+    <div class="auth-layout__intro">
+      <p class="auth-layout__eyebrow">Authentication</p>
+      <h1>Secure access flow</h1>
+      <p>
+        The auth structure is ready for registration, login, OTP verification, and password reset
+        flows.
+      </p>
+    </div>
+
+    <nav class="auth-layout__nav" aria-label="Authentication navigation">
+      @for (link of links; track link.path) {
+        <a
+          class="auth-layout__nav-link"
+          [routerLink]="link.path"
+          routerLinkActive="auth-layout__nav-link--active"
+        >
+          {{ link.label }}
+        </a>
+      }
+    </nav>
+  </div>
+
+  <div class="auth-layout__content">
+    <router-outlet />
+  </div>
+</section>

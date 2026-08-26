@@ -1,0 +1,30 @@
+<section class="auth-page">
+  <p class="auth-page__eyebrow">Auth</p>
+  <h2>Login</h2>
+  <p>Sign in using your email or phone number and password.</p>
+
+  <form class="auth-page__form" [formGroup]="loginForm" (ngSubmit)="submit()">
+    <label class="auth-page__field">
+      <span>Email or phone</span>
+      <input type="text" formControlName="loginId" autocomplete="username" />
+    </label>
+
+    <label class="auth-page__field">
+      <span>Password</span>
+      <input type="password" formControlName="password" autocomplete="current-password" />
+    </label>
+
+    @if (errorMessage) {
+      <p class="auth-page__message auth-page__message--error">{{ errorMessage }}</p>
+    }
+
+    <button class="auth-page__button" type="submit" [disabled]="isSubmitting">
+      {{ isSubmitting ? 'Signing in...' : 'Sign in' }}
+    </button>
+  </form>
+
+  <div class="auth-page__actions">
+    <a routerLink="/auth/register">Create account</a>
+    <a routerLink="/auth/forgot-password">Forgot password?</a>
+  </div>
+</section>
